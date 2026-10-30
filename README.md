@@ -23,7 +23,7 @@ Each module has:
 |---|--------|---------|-------|
 | 1 | Areas, Distances and the Definite Integral | §4.1, §4.2 | Lecture 18: Definite Integrals (MIT OpenCourseWare) |
 | 2 | The Fundamental Theorem of Calculus | §4.3, §4.4 | Lecture 19: First Fundamental Theorem of Calculus (MIT OpenCourseWare) |
-| 3 | The Substitution Rule | §4.5, §4.5 | Lecture 15: Differentials and Antiderivatives (MIT OpenCourseWare) |
+| 3 | The Substitution Rule | §4.5 | Lecture 15: Differentials and Antiderivatives (MIT OpenCourseWare) |
 | 4 | Areas Between Curves and Volumes | §5.1, §5.2 | Lecture 22: Volumes by Disks and Shells (MIT OpenCourseWare) |
 | 5 | Cylindrical Shells, Work and Average Value | §5.3, §5.4, §5.5 | Lecture 23: Work, Average Value, Probability (MIT OpenCourseWare) |
 | 6 | Integration by Parts and Trigonometric Integrals | §7.1, §7.2 | Lecture 30: Integration by Parts, Reduction Formulae (MIT OpenCourseWare) |
