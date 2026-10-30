@@ -1,0 +1,1085 @@
+<body>
+<div class="progress" id="progress"></div>
+<div class="banner">∫ <b>CAL02 · Integral Calculus</b> &nbsp;—&nbsp; a class of <b>Instr. Ryan M. Vitalez, LPT</b><span>&nbsp;·&nbsp; Rizal Technological University</span></div>
+<div id="app"><div class="loading"><div class="spinner"></div>Loading…</div></div>
+<button class="backtop" id="backtop" type="button" aria-label="Back to top">↑</button>
+
+<script>window.BOOT = <?!= boot ?>;</script>
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                   options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] },
+                   startup: { typeset: false } };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<script>
+// ===== MathExpr: reads and compares typed math answers (shared by Code.gs and Student.html) =====
+// Students type answers such as  x^2 sin(x) + C,  3/4,  pi/4,  2ln(3),  sec^2 x,  tan^-1(x),  |x|,  e^(2x).
+// parse() turns the text into a tree; value() evaluates it; latex() shows it back to the student;
+// sameNumber() and sameFunction() decide whether an answer matches the key.
+var MathExpr = (function () {
+  var FN = {
+    sin: Math.sin, cos: Math.cos, tan: Math.tan,
+    sec: function (x) { return 1 / Math.cos(x); }, csc: function (x) { return 1 / Math.sin(x); },
+    cot: function (x) { return 1 / Math.tan(x); },
+    arcsin: Math.asin, arccos: Math.acos, arctan: Math.atan,
+    arcsec: function (x) { return Math.acos(1 / x); }, arccsc: function (x) { return Math.asin(1 / x); },
+    arccot: function (x) { return Math.PI / 2 - Math.atan(x); },
+    sinh: function (x) { return (Math.exp(x) - Math.exp(-x)) / 2; },
+    cosh: function (x) { return (Math.exp(x) + Math.exp(-x)) / 2; },
+    tanh: function (x) { var a = Math.exp(x), b = Math.exp(-x); return (a - b) / (a + b); },
+    sech: function (x) { return 2 / (Math.exp(x) + Math.exp(-x)); },
+    csch: function (x) { return 2 / (Math.exp(x) - Math.exp(-x)); },
+    coth: function (x) { var a = Math.exp(x), b = Math.exp(-x); return (a + b) / (a - b); },
+    arcsinh: function (x) { return Math.log(x + Math.sqrt(x * x + 1)); },
+    arccosh: function (x) { return Math.log(x + Math.sqrt(x * x - 1)); },
+    arctanh: function (x) { return 0.5 * Math.log((1 + x) / (1 - x)); },
+    ln: Math.log, log: Math.log, exp: Math.exp, sqrt: Math.sqrt, abs: Math.abs,
+    cbrt: function (x) { return x < 0 ? -Math.pow(-x, 1 / 3) : Math.pow(x, 1 / 3); }
+  };
+  var ALIAS = { asin: 'arcsin', acos: 'arccos', atan: 'arctan', asec: 'arcsec', acsc: 'arccsc', acot: 'arccot',
+                asinh: 'arcsinh', acosh: 'arccosh', atanh: 'arctanh', arsinh: 'arcsinh', arcosh: 'arccosh',
+                artanh: 'arctanh' };
+  var INVERSE = { sin: 'arcsin', cos: 'arccos', tan: 'arctan', sec: 'arcsec', csc: 'arccsc', cot: 'arccot',
+                  sinh: 'arcsinh', cosh: 'arccosh', tanh: 'arctanh' };
+  var CONST = { pi: Math.PI, e: Math.E };
+  var GREEK = { 'θ': 'theta', 'α': 'alpha', 'β': 'beta', 'φ': 'phi', 'λ': 'lambda', 'ω': 'omega', 'μ': 'mu' };
+  var TEXFN = { arcsin: '\\sin^{-1}', arccos: '\\cos^{-1}', arctan: '\\tan^{-1}', arcsec: '\\sec^{-1}',
+                arccsc: '\\csc^{-1}', arccot: '\\cot^{-1}', arcsinh: '\\sinh^{-1}', arccosh: '\\cosh^{-1}',
+                arctanh: '\\tanh^{-1}', sech: '\\operatorname{sech}', csch: '\\operatorname{csch}',
+                exp: '\\exp', ln: '\\ln', log: '\\ln' };
+
+  function fail(msg) { var e = new Error(msg); e.mathexpr = true; throw e; }
+
+  function normalize(s) {
+    s = String(s == null ? '' : s);
+    s = s.replace(/[−–—]/g, '-').replace(/[×·⋅∙]/g, '*').replace(/÷/g, '/').replace(/π/g, 'pi')
+      .replace(/√/g, 'sqrt').replace(/∛/g, 'cbrt').replace(/⁻¹/g, '^(-1)').replace(/⁻²/g, '^(-2)')
+      .replace(/²/g, '^2').replace(/³/g, '^3').replace(/⁴/g, '^4').replace(/½/g, '(1/2)').replace(/\*\*/g, '^')
+      .replace(/[θαβφλωμ]/g, function (c) { return GREEK[c]; })
+      .replace(/\\left|\\right|\\,|\\;|\\!/g, '').replace(/\\cdot|\\times/g, '*')
+      .replace(/\\(pi|theta|alpha|beta|phi|lambda|omega|mu)/g, '$1')
+      .replace(/\\(arcsin|arccos|arctan|sinh|cosh|tanh|sin|cos|tan|sec|csc|cot|ln|log|exp)/g, '$1')
+      .replace(/\\sqrt/g, 'sqrt').replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, '(($1)/($2))')
+      .replace(/[{}]/g, function (c) { return c === '{' ? '(' : ')'; })
+      .replace(/\[/g, '(').replace(/\]/g, ')');
+    return s;
+  }
+
+  function tokenize(src, vars) {
+    var names = [];
+    Object.keys(FN).forEach(function (k) { names.push({ s: k, k: 'fn' }); });
+    Object.keys(ALIAS).forEach(function (k) { names.push({ s: k, k: 'fn' }); });
+    Object.keys(CONST).forEach(function (k) { names.push({ s: k, k: 'const' }); });
+    (vars || []).forEach(function (v) { names.push({ s: v, k: 'var' }); });
+    names.push({ s: 'C', k: 'C' });
+    names.sort(function (a, b) { return b.s.length - a.s.length; });
+    var out = [], i = 0, s = src;
+    while (i < s.length) {
+      var c = s.charAt(i);
+      if (/\s/.test(c)) { i++; continue; }
+      if (/[0-9.]/.test(c)) {
+        var m = s.slice(i).match(/^(\d+\.?\d*|\.\d+)/);
+        if (!m) fail('I could not read the number near "' + s.slice(i, i + 6) + '".');
+        out.push({ k: 'num', v: Number(m[1]) });
+        i += m[1].length;
+        continue;
+      }
+      if (/[+\-*\/^(),|!]/.test(c)) { out.push({ k: c }); i++; continue; }
+      if (/[A-Za-z_]/.test(c)) {
+        var hit = null;
+        for (var j = 0; j < names.length; j++) {
+          if (s.substr(i, names[j].s.length) === names[j].s) { hit = names[j]; break; }
+        }
+        if (!hit) fail('Unknown symbol "' + s.slice(i).match(/^[A-Za-z_]+/)[0] + '". ' +
+          (vars && vars.length ? 'Use ' + vars.join(', ') + ' as the variable' + (vars.length > 1 ? 's' : '') + '.' : 'Numbers only here.'));
+        out.push({ k: hit.k, s: ALIAS[hit.s] || hit.s });
+        i += hit.s.length;
+        continue;
+      }
+      fail('The symbol "' + c + '" is not allowed. Use + - * / ^ ( ) and function names such as sin, ln, sqrt.');
+    }
+    return out;
+  }
+
+  function parse(text, vars) {
+    var src = normalize(text).trim();
+    if (!src) fail('The answer is empty.');
+    var toks = tokenize(src, vars), p = 0, absDepth = 0;
+    function peek() { return toks[p]; }
+    function next() { return toks[p++]; }
+    function is(k) { return toks[p] && toks[p].k === k; }
+    function expect(k) { if (!is(k)) fail(k === ')' ? 'A closing parenthesis ")" is missing.' : 'Expected "' + k + '".'); p++; }
+    function startsPrimary(t) {
+      if (!t) return false;
+      if (t.k === '|') return absDepth === 0 || prevIsOperator();
+      return t.k === 'num' || t.k === 'var' || t.k === 'const' || t.k === 'fn' || t.k === '(' || t.k === 'C';
+    }
+    function prevIsOperator() { var t = toks[p - 1]; return !t || /^[+\-*\/^(,|]$/.test(t.k) && t.k !== ')'; }
+    function expr() {
+      var a = term();
+      while (is('+') || is('-')) { var op = next().k; a = { t: 'bin', op: op, a: a, b: term() }; }
+      return a;
+    }
+    function term() {
+      var a = unary();
+      for (;;) {
+        if (is('*') || is('/')) { var op = next().k; a = { t: 'bin', op: op, a: a, b: unary() }; }
+        else if (startsPrimary(peek())) a = { t: 'bin', op: '*', a: a, b: power(), implicit: true };
+        else return a;
+      }
+    }
+    function unary() {
+      if (is('-')) { next(); return { t: 'neg', a: unary() }; }
+      if (is('+')) { next(); return unary(); }
+      return power();
+    }
+    function power() {
+      var a = postfix();
+      if (is('^')) { next(); return { t: 'bin', op: '^', a: a, b: unary() }; }
+      return a;
+    }
+    function postfix() {
+      var a = primary();
+      while (is('!')) { next(); a = { t: 'fact', a: a }; }
+      return a;
+    }
+    function fnArg() {
+      // sin(x), or sin x / sin 2x / ln x^2 without parentheses: numbers, variables and constants that follow
+      if (is('(')) { next(); var e = expr(); expect(')'); return e; }
+      if (is('|')) return primary();
+      var parts = [];
+      while (is('num') || is('var') || is('const')) {
+        var f = primary();
+        if (is('^')) { next(); f = { t: 'bin', op: '^', a: f, b: unary() }; }
+        parts.push(f);
+      }
+      if (!parts.length) fail('A function needs an input, for example sin(x).');
+      return parts.reduce(function (x, y) { return { t: 'bin', op: '*', a: x, b: y, implicit: true }; });
+    }
+    function primary() {
+      var t = next();
+      if (!t) fail('The answer ends too early.');
+      if (t.k === 'num') return { t: 'num', v: t.v };
+      if (t.k === 'var') return { t: 'var', n: t.s };
+      if (t.k === 'const') return { t: 'const', n: t.s };
+      if (t.k === 'C') return { t: 'C' };
+      if (t.k === '(') { var e = expr(); expect(')'); return e; }
+      if (t.k === '|') { absDepth++; var a = expr(); absDepth--; expect('|'); return { t: 'fn', f: 'abs', a: a }; }
+      if (t.k === 'fn') {
+        var f = t.s, pw = null;
+        if (is('^')) {
+          // sin^2 x means (sin x)^2 and sin^-1 x means arcsin x
+          next();
+          var save = p, neg = false;
+          if (is('(')) { next(); if (is('-')) { next(); neg = true; } }
+          else if (is('-')) { next(); neg = true; }
+          if (neg && is('num') && peek().v === 1) {
+            next();
+            if (toks[save] && toks[save].k === '(') expect(')');
+            if (!INVERSE[f]) fail('Write the inverse of ' + f + ' another way.');
+            f = INVERSE[f];
+          } else { p = save; pw = postfix(); }
+        }
+        var node = { t: 'fn', f: f, a: fnArg() };
+        return pw ? { t: 'bin', op: '^', a: node, b: pw } : node;
+      }
+      fail(t.k === ')' ? 'There is an extra ")" or something is missing before it.' : 'Something is missing before "' + t.k + '".');
+    }
+    var tree = expr();
+    if (p < toks.length) fail(toks[p].k === ')' ? 'There is an extra ")".' : 'I could not read the part starting at "' + (toks[p].s || toks[p].k) + '".');
+    return tree;
+  }
+
+  function gamma(n) {
+    if (n < 0 || Math.floor(n) !== n || n > 170) return NaN;
+    var r = 1;
+    for (var i = 2; i <= n; i++) r *= i;
+    return r;
+  }
+
+  function value(t, env) {
+    switch (t.t) {
+      case 'num': return t.v;
+      case 'const': return CONST[t.n];
+      case 'C': return env && env.C !== undefined ? env.C : 0;
+      case 'var': return env && env[t.n] !== undefined ? env[t.n] : NaN;
+      case 'neg': return -value(t.a, env);
+      case 'fact': return gamma(value(t.a, env));
+      case 'fn': return FN[t.f](value(t.a, env));
+      case 'bin':
+        var a = value(t.a, env), b = value(t.b, env);
+        if (t.op === '+') return a + b;
+        if (t.op === '-') return a - b;
+        if (t.op === '*') return a * b;
+        if (t.op === '/') return a / b;
+        if (a < 0 && Math.floor(b) !== b) {
+          // odd roots of negative numbers, e.g. (-8)^(1/3)
+          var inv = 1 / b, k = Math.round(inv);
+          if (Math.abs(inv - k) < 1e-9 && k % 2 !== 0) return -Math.pow(-a, b);
+          return NaN;
+        }
+        return Math.pow(a, b);
+    }
+    return NaN;
+  }
+
+  function hasC(t) {
+    if (!t) return false;
+    if (t.t === 'C') return true;
+    return hasC(t.a) || hasC(t.b);
+  }
+
+  var PREC = { '+': 1, '-': 1, '*': 2, '/': 2, '^': 4 };
+  function prec(t) {
+    if (t.t === 'bin') return PREC[t.op];
+    if (t.t === 'neg') return 1.5;
+    return 9;
+  }
+  function latex(t) {
+    switch (t.t) {
+      case 'num': return String(t.v);
+      case 'const': return t.n === 'pi' ? '\\pi' : 'e';
+      case 'C': return 'C';
+      case 'var': return t.n.length > 1 ? '\\' + t.n : t.n;
+      case 'neg': return '-' + wrap(t.a, 2);
+      case 'fact': return wrap(t.a, 9) + '!';
+      case 'fn':
+        if (t.f === 'sqrt') return '\\sqrt{' + latex(t.a) + '}';
+        if (t.f === 'cbrt') return '\\sqrt[3]{' + latex(t.a) + '}';
+        if (t.f === 'abs') return '\\left|' + latex(t.a) + '\\right|';
+        if (t.f === 'exp') return 'e^{' + latex(t.a) + '}';
+        return (TEXFN[t.f] || '\\' + t.f) + '\\left(' + latex(t.a) + '\\right)';
+      case 'bin':
+        if (t.op === '/') return '\\frac{' + latex(t.a) + '}{' + latex(t.b) + '}';
+        if (t.op === '^') {
+          if (t.a.t === 'fn' && t.a.f !== 'sqrt' && t.a.f !== 'abs' && t.a.f !== 'exp' && t.a.f !== 'cbrt') {
+            return (TEXFN[t.a.f] || '\\' + t.a.f) + '^{' + latex(t.b) + '}\\left(' + latex(t.a.a) + '\\right)';
+          }
+          return wrap(t.a, 5) + '^{' + latex(t.b) + '}';
+        }
+        if (t.op === '*') {
+          var l = wrap(t.a, 2), r = wrap(t.b, 2.5);
+          var dot = t.b.t === 'num' || (t.b.t === 'bin' && t.b.op === '^' && t.b.a.t === 'num') || t.b.t === 'neg';
+          return l + (dot ? ' \\cdot ' : ' ') + r;
+        }
+        return latex(t.a) + ' ' + t.op + ' ' + wrap(t.b, t.op === '-' ? 1.5 : 1);
+    }
+    return '';
+  }
+  function wrap(t, p) {
+    var s = latex(t);
+    return prec(t) < p ? '\\left(' + s + '\\right)' : s;
+  }
+
+  // Deterministic sample points, so a submission is always graded the same way.
+  function samples(vars, domain, count) {
+    var seed = 12345, pts = [];
+    function rnd() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+    for (var i = 0; i < count; i++) {
+      var env = {};
+      vars.forEach(function (v) {
+        var d = (domain && domain[v]) || [-2, 2];
+        env[v] = d[0] + (d[1] - d[0]) * (0.03 + 0.94 * rnd());
+      });
+      pts.push(env);
+    }
+    return pts;
+  }
+
+  function close(a, b, rel) {
+    return Math.abs(a - b) <= rel * Math.max(1, Math.abs(a), Math.abs(b));
+  }
+
+  /** Numeric item: the answer may be a decimal or an exact expression such as pi/4 or 2ln(3). */
+  function numberOf(text) {
+    var tree = parse(text, []);
+    if (hasC(tree)) fail('This answer is a number; leave out "+ C".');
+    return value(tree, {});
+  }
+
+  /**
+   * Formula item. spec = { vars: ['x'], domain: { x: [a, b] }, constant: true|false }
+   * constant: an antiderivative; any answer that differs from the key by a constant is accepted.
+   */
+  function sameFunction(text, keyText, spec) {
+    spec = spec || {};
+    var vars = spec.vars || ['x'];
+    var s = parse(text, vars), k = parse(keyText, vars);
+    var pts = samples(vars, spec.domain, 14), used = 0, d0 = null;
+    for (var i = 0; i < pts.length; i++) {
+      var kv = value(k, pts[i]);
+      if (!isFinite(kv)) continue;
+      var sv = value(s, pts[i]);
+      if (!isFinite(sv)) return false;
+      used++;
+      if (spec.constant) {
+        var d = sv - kv;
+        if (d0 === null) d0 = d;
+        else if (!close(d, d0, 1e-7 * Math.max(1, Math.abs(kv)))) return false;
+      } else if (!close(sv, kv, 1e-7)) return false;
+    }
+    return used >= 4;
+  }
+
+  return { parse: parse, value: value, latex: latex, hasC: hasC, numberOf: numberOf,
+           sameFunction: sameFunction, normalize: normalize };
+})();
+// ===== end MathExpr =====
+
+</script>
+<script>
+(function () {
+  "use strict";
+
+  // Numeric and formula items must have a written solution before the activity can be submitted.
+  var REQUIRE_NUMERIC_SOLUTIONS = true;
+  function graded(type) { return type === "numeric" || type === "expr"; }
+
+  var BOOT = window.BOOT || {};
+  var app = document.getElementById("app");
+  var D = null;  // data for the current view
+
+  // ---------- helpers ----------
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function link(params) { return BOOT.url + (params ? "?" + params : ""); }
+  function call(fn) {
+    var args = [].slice.call(arguments, 1);
+    return new Promise(function (resolve, reject) {
+      var r = google.script.run.withSuccessHandler(resolve).withFailureHandler(function (e) {
+        reject(e && e.message ? e : new Error(String(e)));
+      });
+      r[fn].apply(r, args);
+    });
+  }
+  function typeset(el) {
+    function go() {
+      if (window.MathJax && MathJax.typesetPromise) {
+        if (MathJax.typesetClear) MathJax.typesetClear([el]);
+        return MathJax.typesetPromise([el]).catch(function () {});
+      }
+      setTimeout(go, 300);
+    }
+    go();
+  }
+  function store(key, v) { try { localStorage.setItem(key, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } }
+  function load(key) { try { return JSON.parse(localStorage.getItem(key) || "null"); } catch (e) { return null; } }
+  function nice(ymd) {
+    if (!ymd) return "";
+    var p = ymd.split("-").map(Number);
+    return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][p[1] - 1] + " " + p[2] + ", " + p[0];
+  }
+  function heroHead(man) {
+    return '<img class="logo" src="' + esc(man.logo) + '" alt="Rizal Technological University seal">';
+  }
+  function who() {
+    return '<span class="who">Signed in as <b>' + esc(BOOT.email) + '</b></span>';
+  }
+
+  // ---------- home ----------
+  function renderHome(d) {
+    document.body.className = "landing";
+    var man = d.manifest, sem = d.semester;
+    var byN = {};
+    d.modules.forEach(function (m) { byN[m.n] = m; });
+    var notice = "";
+    if (sem.phase === "before") notice = '<div class="notice">⏳ <b>The semester starts on ' + nice(sem.start) + '.</b> The modules will open then.</div>';
+    else if (sem.phase === "after") notice = '<div class="notice">📕 <b>The semester ended on ' + nice(sem.end) + '.</b> You can still review open lessons, but activities are closed.</div>';
+    if (sem.announcement) notice += '<div class="notice">📣 ' + esc(sem.announcement) + '</div>';
+
+    var required = d.modules.filter(function (m) { return !m.optional; });
+    var done = required.filter(function (m) { return m.attempts > 0; }).length;
+    var parts = man.parts.map(function (p) {
+      var cards = p.modules.map(function (n) {
+        var m = byN[n];
+        if (!m) return "";
+        var badge = m.attempts > 0 ? '<span class="badge done">Done · ' + m.best + "/" + m.total + "</span>"
+          : m.state.canSubmit ? '<span class="badge open">Open</span>'
+          : '<span class="badge closed">' + (m.state.canView ? "View only" : "Locked") + "</span>";
+        var topics = m.topics.map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("");
+        var due = m.state.dueOn ? '<p style="font-size:.82rem;color:#A7F3D0;flex:0">Activity due ' + nice(m.state.dueOn) + "</p>" : "";
+        var links = m.state.canView
+          ? '<a class="cl amber" target="_top" href="' + esc(link("module=" + n)) + '">📖 Lesson & video</a>' +
+            '<a class="cl ghost" target="_top" href="' + esc(link("module=" + n)) + '#activity">✍️ Activity</a>'
+          : '<span class="cl ghost">🔒 ' + esc(m.state.reason) + "</span>";
+        return '<article class="chapter' + (m.state.canView ? "" : " locked") + '"><div class="cnum">' + esc(m.icon) +
+          " <span>Module " + n + "</span>" + (m.optional ? '<span class="badge opt">Optional</span>' : "") + badge +
+          "</div><h3>" + esc(m.title) + "</h3><p>" + esc(m.overview) +
+          '</p><ul class="topics">' + topics + "</ul>" + due + '<div class="clinks">' + links + "</div></article>";
+      }).join("");
+      var ps = (man.problemSets || []).filter(function (x) { return x.n === p.problemSet; })[0];
+      var psLink = ps ? '<a class="ps-link" target="_top" href="' + esc(link("ps=" + ps.n)) + '">📝 ' + esc(ps.title) + "</a>" : "";
+      return '<h3 class="part">' + esc(p.title) + '</h3><p class="sub"><b>' + esc(p.span) + ".</b> " + esc(p.blurb) +
+        "</p>" + psLink + '<div class="grid">' + cards + "</div>";
+    }).join("");
+
+    var syl = d.syllabus || {};
+    var L = d.links || {};
+    var facts = (syl.courseInfo || []).map(function (f) {
+      return "<div><dt>" + esc(f[0]) + "</dt><dd>" + esc(f[1]) + "</dd></div>";
+    }).join("");
+
+    var navItems = [["#course", "Course info"], ["#syllabus", "Syllabus"], ["#modules", "Modules"],
+      ["#grading", "Requirements & grading"], ["#transmutation", "Transmutation"],
+      ["#references", "References"], ["#consultation", "Consultation"]];
+    var nav = '<nav class="top" aria-label="Home sections"><div class="in">' + navItems.map(function (x) {
+      return '<a href="' + x[0] + '">' + x[1] + "</a>";
+    }).join("") + "</div></nav>";
+
+    var syllabusSec = '<section id="syllabus"><h2 class="section major">Syllabus</h2>' +
+      '<div class="panel syllabus-card"><div><h3>📄 ' + esc(man.course) + " · " + esc(man.courseTitle) + " course syllabus</h3>" +
+      "<p>The complete outcomes-based syllabus: course outcomes, the week-by-week teaching and learning plan, " +
+      "class policies, and the grading system.</p></div>" +
+      (L.syllabus ? '<a class="cta" target="_blank" rel="noopener" href="' + esc(L.syllabus) + '">Open the full syllabus ↗</a>'
+                  : '<span class="muted">The syllabus link has not been set yet.</span>') + "</div></section>";
+
+    var modulesSec = '<section id="modules"><h2 class="section major">Modules</h2>' +
+      '<p class="sub">Each module has a short discussion, worked examples, a lecture video with questions, and a graded activity. ' +
+      "Each part also has a problem set to answer in your notebook. Modules marked <b>Optional</b> are enrichment topics: " +
+      "they are not counted in your activity average.</p>" +
+      parts + "</section>";
+
+    var gradingSec = '<section id="grading"><h2 class="section major">Major Course Requirements and Grading System</h2>' +
+      '<div class="panel"><p class="req-line"><b>Major course requirements:</b> ' +
+      (syl.requirements || []).map(function (r) { return '<span class="req-chip">' + esc(r) + "</span>"; }).join("") + "</p>" +
+      '<div class="tw"><table class="dark"><thead><tr><th>Component</th><th class="c">Weight</th></tr></thead><tbody>' +
+      (syl.grading || []).map(function (g) {
+        return "<tr><td><b>" + esc(g.component) + "</b>" + (g.items.length ? '<ul class="sub-items">' +
+          g.items.map(function (i) { return "<li>" + esc(i) + "</li>"; }).join("") + "</ul>" : "") +
+          '</td><td class="c">' + esc(g.weight) + "</td></tr>";
+      }).join("") + '</tbody><tfoot><tr><th>Total</th><th class="c">100%</th></tr></tfoot></table></div>' +
+      '<p class="muted">The point grade is read from the transmutation table below.</p></div></section>';
+
+    var transSec = '<section id="transmutation"><h2 class="section major">Transmutation Table</h2><div class="panel"><div class="tw"><table class="dark">' +
+      '<thead><tr><th>Threshold</th><th class="c">Point grade</th></tr></thead><tbody>' +
+      (syl.transmutation || []).map(function (t) {
+        return "<tr><td>" + esc(t[0]) + '</td><td class="c">' + esc(t[1]) + "</td></tr>";
+      }).join("") + "</tbody></table></div></div></section>";
+
+    var refSec = '<section id="references"><h2 class="section major">References</h2><div class="panel"><ul>' +
+      (syl.references || []).map(function (r) { return "<li>" + r + "</li>"; }).join("") + "</ul>" +
+      (syl.videoCredit ? '<p class="muted">' + esc(syl.videoCredit) + "</p>" : "") + "</div></section>";
+
+    var consultSec = '<section id="consultation"><h2 class="section major">Consultation Hours</h2><div class="panel">' +
+      '<div class="tw"><table class="dark"><thead><tr><th>Day</th><th>Time</th><th>Room</th></tr></thead><tbody>' +
+      (syl.consultation || []).map(function (c) {
+        return "<tr><td>" + esc(c.day) + "</td><td>" + esc(c.time) + "</td><td>" + esc(c.room) + "</td></tr>";
+      }).join("") + "</tbody></table></div>" +
+      (L.consultation ? '<p style="margin-top:14px"><a class="cta" target="_blank" rel="noopener" href="' + esc(L.consultation) +
+        '">📅 Book a consultation ↗</a></p>' : "") + "</div></section>";
+
+    app.innerHTML =
+      '<header class="hero" id="course"><div class="inner">' + heroHead(man) + '<div class="txt">' +
+      '<span class="eyebrow">∫ ' + esc(man.university) + " · " + esc(man.department) + "</span>" +
+      "<h1><small>" + esc(man.course) + " · " + esc(man.program) + "</small>" + esc(man.courseTitle) + "</h1>" +
+      (syl.description ? '<p class="course-desc"><b>Course description.</b> ' + esc(syl.description) + "</p>" : "") +
+      '<div class="hchips">' + who() + (facts ? "" : "<span>📅 " + esc(sem.name || "") + "</span>") +
+      "<span>✅ " + done + " of " + required.length + " required activities done</span>" +
+      (d.maxAttempts ? "<span>🔁 " + d.maxAttempts + " attempts per activity</span>" : "") + "</div>" +
+      (facts ? '<h2 class="facts-title">Course Information</h2><dl class="facts">' + facts + "</dl>" : "") +
+      notice + "</div></div></header>" + nav +
+      '<div class="wrap">' + syllabusSec + modulesSec + gradingSec + transSec + refSec + consultSec + "</div>" + footer(man);
+    initScroll();
+  }
+
+  function footer(man) {
+    return '<footer class="site-foot"><div class="in"><p><b>' + esc(man.course) + " · " + esc(man.courseTitle) +
+      "</b>. " + esc(man.university) + ". Online modules by <b>" + esc(man.instructor) + "</b>.</p>" +
+      '<p><a target="_top" href="' + esc(link("")) + '">Course home</a></p></div></footer>';
+  }
+
+  // ---------- module ----------
+  function renderModule(d) {
+    document.body.className = "";
+    var m = d.module, man = d.manifest, n = m.n;
+    var hero = '<header class="hero" data-num="' + (n < 10 ? "0" : "") + n + '"><div class="inner">' + heroHead(man) +
+      '<div class="txt"><div class="crumbs"><a target="_top" href="' + esc(link("")) + '">⌂ Course Home</a>' +
+      (d.lessonHtml ? '<a href="#video">🎬 Video</a><a href="#activity">✍️ Activity</a>' : "") +
+      (d.lessonHtml && m.problemSet ? '<a target="_top" href="' + esc(link("ps=" + m.problemSet.n)) + '">📝 Problem Set ' + m.problemSet.n + "</a>" : "") + "</div>" +
+      '<span class="eyebrow">' + esc(man.course) + " · Module " + n + " of " + man.count + "</span>" +
+      "<h1>" + esc(m.title) + " <em>· Online Module</em></h1><p>" + esc(m.overview) + "</p>" +
+      '<div class="hchips">' + who() + (m.optional ? "<span>⭐ Optional module (not counted in your average)</span>" : "") +
+      (d.state.dueOn ? "<span>📅 Activity due " + nice(d.state.dueOn) + "</span>" : "") +
+      "</div></div></div></header>";
+
+    if (!d.state.canView) {
+      app.innerHTML = hero + '<main><section class="ch"><h2>🔒 Not available yet</h2><p>' + esc(d.state.reason) +
+        '</p><p><a target="_top" href="' + esc(link("")) + '">← Back to all modules</a></p></section></main>' + footer(man);
+      return;
+    }
+
+    var navItems = [["#objectives", "Objectives"]].concat(m.sections.map(function (s, i) {
+      return ["#s" + (i + 1), s[0] ? "§" + s[0] : s[1]];
+    }), [["#takeaways", "Takeaways"], ["#examples", "Examples"], ["#video", "Video"], ["#activity", "Activity"]]);
+    var nav = '<nav class="top" aria-label="Module sections"><div class="in"><a class="home" target="_top" href="' +
+      esc(link("")) + '">⌂ Home</a>' + navItems.map(function (x) {
+        return '<a href="' + x[0] + '">' + esc(x[1]) + "</a>";
+      }).join("") + "</div></nav>";
+
+    var prev = n > 1 ? '<a target="_top" href="' + esc(link("module=" + (n - 1))) + '"><small>← Previous</small>Module ' + (n - 1) + ": " + esc(man.titles[n - 2]) + "</a>"
+      : '<a target="_top" href="' + esc(link("")) + '"><small>←</small>Course home</a>';
+    var next = n < man.count ? '<a class="next" target="_top" href="' + esc(link("module=" + (n + 1))) + '"><small>Next →</small>Module ' + (n + 1) + ": " + esc(man.titles[n]) + "</a>"
+      : '<a class="next" target="_top" href="' + esc(link("")) + '"><small>→</small>Course home</a>';
+
+    app.innerHTML = hero + nav + "<main>" + d.lessonHtml + videoSection(d) + activitySection(d) +
+      '<div class="chnav">' + prev + next + "</div></main>" + footer(man);
+
+    typeset(app);
+    initVideo(d);
+    initActivity(d);
+    initScroll();
+    if (location.hash) jumpTo(location.hash);
+  }
+
+  // ---------- problem set ----------
+  function renderProblemSet(d) {
+    document.body.className = "";
+    var ps = d.ps, man = d.manifest;
+    var mods = ps.modules.map(function (n) { return "Module " + n + ": " + man.titles[n - 1]; });
+    var hero = '<header class="hero" data-num="PS' + ps.n + '"><div class="inner">' + heroHead(man) +
+      '<div class="txt"><div class="crumbs"><a target="_top" href="' + esc(link("")) + '">⌂ Course Home</a>' +
+      ps.modules.map(function (n) { return '<a target="_top" href="' + esc(link("module=" + n)) + '">Module ' + n + "</a>"; }).join("") +
+      "</div><span class=\"eyebrow\">" + esc(man.course) + " · Problem Set " + ps.n + "</span>" +
+      "<h1>" + esc(ps.title.replace(/^Problem Set \d+:\s*/, "")) + " <em>· Problem Set " + ps.n + "</em></h1>" +
+      "<p>Covers " + esc(mods.join("; ")) + ". Answer in your notebook; your instructor checks it (it is part of Written Works).</p>" +
+      '<div class="hchips">' + who() + '<button type="button" class="cta" id="print-ps">🖨️ Print or save as PDF</button></div>' +
+      "</div></div></header>";
+    var body = d.open ? d.html
+      : '<section class="ch"><h2>🔒 Not available yet</h2><p>This problem set opens together with its modules.</p></section>';
+    app.innerHTML = hero + '<main class="problemset">' + body + '<div class="chnav"><a target="_top" href="' + esc(link("")) +
+      '"><small>←</small>Course home</a></div></main>' + footer(man);
+    var pr = document.getElementById("print-ps");
+    if (pr) pr.onclick = function () { window.print(); };
+    typeset(app);
+    initScroll();
+  }
+
+  // Equations above the target finish rendering after the page is drawn and push it down,
+  // so scroll again once they settle.
+  function jumpTo(hash) {
+    var mine = renderCount;
+    [200, 1200, 2500].forEach(function (ms) {
+      setTimeout(function () {
+        var t = mine === renderCount && document.querySelector(hash);
+        if (t) t.scrollIntoView();
+      }, ms);
+    });
+  }
+
+  // ---------- video ----------
+  function videoSection(d) {
+    var v = d.video;
+    if (!v) return '<section class="ch" id="video"><h2><span class="num">🎬</span>Lecture video</h2><p class="muted">No video has been set for this module yet.</p></section>';
+    var watch = "https://www.youtube.com/watch?v=" + encodeURIComponent(v.youtubeId);
+    var list = v.checkpoints.map(function (c, i) {
+      return '<li id="cp-item-' + i + '"><span class="when">Question ' + (i + 1) + " · " + esc(atLabel(c.at)) + "</span>" +
+        "<p><b>" + esc(c.q) + '</b></p><div class="cp-choices">' + c.choices.map(function (ch, j) {
+          return '<button type="button" data-cp="' + i + '" data-choice="' + j + '">' + String.fromCharCode(65 + j) + ". " + esc(ch) + "</button>";
+        }).join("") + '</div><div class="cp-feedback"></div></li>';
+    }).join("");
+    return '<section class="ch" id="video"><h2><span class="num">🎬</span>Lecture video</h2>' +
+      '<p class="lead">Watch the lecture. It pauses at ' + v.checkpoints.length + " questions; answer each one to keep going." +
+      " Your answers are recorded (they are not part of your activity score).</p>" +
+      '<div class="video-wrap"><div id="yt"></div><div class="cp-overlay" id="cp-overlay" hidden></div></div>' +
+      '<div class="cite"><b>Source:</b> “' + esc(v.title) + "”" + (v.speaker ? ", " + esc(v.speaker) : "") + ". " +
+      esc(v.source || "") + (v.sourceUrl ? ' (<a href="' + esc(v.sourceUrl) + '" target="_blank" rel="noopener">' + esc(v.sourceUrl) + "</a>)" : "") +
+      (v.license ? ". License: " + esc(v.license) : "") + '. <a href="' + esc(watch) + '" target="_blank" rel="noopener">Open on YouTube</a>.</div>' +
+      '<h3>Video questions</h3><p class="muted">If the video does not play here, open it on YouTube and answer these as you watch.</p>' +
+      '<ul class="cp-list">' + list + "</ul></section>";
+  }
+
+  function atLabel(at) {
+    at = String(at).trim();
+    if (/%$/.test(at)) return Number(at.slice(0, -1)) >= 100 ? "at the end" : "about " + at + " through";
+    var s = /:/.test(at) ? Number(at.split(":")[0]) * 60 + Number(at.split(":")[1]) : Number(at);
+    return "at " + Math.floor(s / 60) + ":" + ("0" + Math.floor(s % 60)).slice(-2);
+  }
+  function atSeconds(at, dur) {
+    at = String(at).trim();
+    if (/%$/.test(at)) return Math.min(Number(at.slice(0, -1)) / 100 * dur, dur - 1);
+    if (/:/.test(at)) return Number(at.split(":")[0]) * 60 + Number(at.split(":")[1]);
+    return Math.min(Number(at), dur - 1);
+  }
+
+  function initVideo(d) {
+    var v = d.video;
+    if (!v) return;
+    var answered = d.videoAnswers || {};
+    var overlay = document.getElementById("cp-overlay");
+    var player = null, times = [], active = -1;
+
+    Object.keys(answered).forEach(function (i) { markAnswered(Number(i), answered[i].choice, answered[i].correct, null, null); });
+
+    function markAnswered(i, choice, correct, answer, explain) {
+      var li = document.getElementById("cp-item-" + i);
+      if (!li) return;
+      li.classList.add("answered");
+      li.querySelectorAll("button").forEach(function (b) {
+        b.disabled = true;
+        if (Number(b.dataset.choice) === choice) b.classList.add(correct ? "right" : "picked-wrong");
+        if (answer != null && Number(b.dataset.choice) === answer) b.classList.add("right");
+      });
+      li.querySelector(".cp-feedback").innerHTML = (correct ? '<span class="ok">✓ Correct.</span> ' : '<span class="no">✗ Not quite.</span> ') + esc(explain || "");
+    }
+
+    function answer(i, choice, inOverlay) {
+      var btns = (inOverlay ? overlay : document.getElementById("cp-item-" + i)).querySelectorAll("button[data-choice]");
+      btns.forEach(function (b) { b.disabled = true; });
+      call("api_checkpoint", d.module.n, i, choice).then(function (res) {
+        answered[i] = { choice: choice, correct: res.correct };
+        markAnswered(i, choice, res.correct, res.answer, res.explain);
+        if (inOverlay) {
+          btns.forEach(function (b) {
+            if (Number(b.dataset.choice) === res.answer) b.classList.add("right");
+            else if (Number(b.dataset.choice) === choice) b.classList.add("picked-wrong");
+          });
+          overlay.querySelector(".cp-feedback").innerHTML = (res.correct ? '<span class="ok">✓ Correct!</span> ' : '<span class="no">✗ Not quite.</span> ') +
+            esc(res.explain) + '<p><button type="button" class="btn small" id="cp-continue">Continue the video ▶</button></p>';
+          document.getElementById("cp-continue").onclick = function () {
+            overlay.hidden = true;
+            active = -1;
+            if (player && player.playVideo) player.playVideo();
+          };
+        }
+      }).catch(function (e) {
+        btns.forEach(function (b) { b.disabled = false; });
+        alert("Could not save your answer: " + e.message);
+      });
+    }
+
+    document.querySelectorAll(".cp-list button[data-cp]").forEach(function (b) {
+      b.addEventListener("click", function () { answer(Number(b.dataset.cp), Number(b.dataset.choice), false); });
+    });
+
+    function ask(i) {
+      if (answered[i] || active === i) return;
+      active = i;
+      if (player && player.pauseVideo) player.pauseVideo();
+      var c = v.checkpoints[i];
+      overlay.innerHTML = '<div class="cp-card"><div class="k">Video question ' + (i + 1) + " of " + v.checkpoints.length +
+        '</div><div class="q">' + esc(c.q) + '</div><div class="cp-choices">' + c.choices.map(function (ch, j) {
+          return '<button type="button" data-choice="' + j + '">' + String.fromCharCode(65 + j) + ". " + esc(ch) + "</button>";
+        }).join("") + '</div><div class="cp-feedback"></div></div>';
+      overlay.hidden = false;
+      overlay.querySelectorAll("button[data-choice]").forEach(function (b) {
+        b.addEventListener("click", function () { answer(i, Number(b.dataset.choice), true); });
+      });
+    }
+
+    function tick() {
+      if (!player || !player.getCurrentTime || !times.length || active >= 0) return;
+      var t = player.getCurrentTime();
+      for (var i = 0; i < times.length; i++) {
+        if (answered[i]) continue;
+        if (t >= times[i]) {
+          // Skipping ahead brings the student back to the first unanswered question.
+          if (t > times[i] + 3 && player.seekTo) player.seekTo(times[i], true);
+          ask(i);
+        }
+        break;
+      }
+    }
+
+    window.onYouTubeIframeAPIReady = function () {
+      player = new YT.Player("yt", {
+        videoId: v.youtubeId,
+        playerVars: { rel: 0, modestbranding: 1, playsinline: 1 },
+        events: {
+          onReady: function () {
+            var dur = player.getDuration() || 0;
+            times = v.checkpoints.map(function (c) { return atSeconds(c.at, dur || 600); });
+            videoTimer = setInterval(tick, 400);
+          },
+          onStateChange: function (e) {
+            if (e.data === 0) {  // ended: ask anything left
+              for (var i = 0; i < v.checkpoints.length; i++) if (!answered[i]) { ask(i); break; }
+            }
+          },
+          onError: function () {
+            document.querySelector(".video-wrap").outerHTML = '<div class="notice">⚠️ This video cannot be played inside the page. ' +
+              '<a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=' + encodeURIComponent(v.youtubeId) +
+              '">Open it on YouTube</a> and answer the video questions below as you watch.</div>';
+          }
+        }
+      });
+    };
+    function noPlayer() {
+      var wrap = document.querySelector(".video-wrap");
+      if (!wrap) return;
+      wrap.outerHTML = '<div class="notice">⚠️ The video player could not load here (YouTube may be blocked on this network). ' +
+        '<a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=' + encodeURIComponent(v.youtubeId) +
+        '">Open it on YouTube</a> and answer the video questions below as you watch.</div>';
+    }
+    if (window.YT && YT.Player) {
+      window.onYouTubeIframeAPIReady();
+    } else if (!document.getElementById("yt-api")) {
+      var s = document.createElement("script");
+      s.id = "yt-api";
+      s.src = "https://www.youtube.com/iframe_api";
+      s.onerror = noPlayer;
+      document.body.appendChild(s);
+    }
+    var thisRender = renderCount;
+    setTimeout(function () { if (!player && thisRender === renderCount) noPlayer(); }, 15000);
+  }
+  var videoTimer = null;
+  var renderCount = 0;
+
+  // ---------- activity ----------
+  function activitySection(d) {
+    var m = d.module, st = d.state, p = d.profile || {};
+    var max = d.maxAttempts;
+    var used = d.attempts || 0;
+    var status = st.canSubmit
+      ? "Attempts used: <b>" + used + (max ? " of " + max : "") + "</b>" + (d.best != null ? " · Best score so far: <b>" + d.best + "/" + d.total + "</b>" : "") +
+        (st.dueOn ? " · Due <b>" + nice(st.dueOn) + "</b>" : "")
+      : "🔒 " + esc(st.reason) + (d.best != null ? " Your best score: <b>" + d.best + "/" + d.total + "</b>." : "");
+    var opts = (d.sections || []).map(function (s) {
+      return '<option value="' + esc(s) + '"' + (s === p.blockSection ? " selected" : "") + ">" + esc(s) + "</option>";
+    }).join("");
+    var sectionField = d.sections && d.sections.length
+      ? '<select data-student="blockSection" required><option value="">Choose…</option>' + opts + "</select>"
+      : '<input type="text" data-student="blockSection" value="' + esc(p.blockSection || "") + '" required>';
+    return '<section class="ch accent" id="activity"><h2><span class="num">✍️</span>' + esc(m.activityTitle) + "</h2>" +
+      '<div class="notice">' + status + "</div>" + d.activityHtml +
+      '<form id="activity-form" novalidate' + (st.canSubmit ? "" : ' class="closed"') + ">" +
+      '<div class="student"><h3>🎓 Your details</h3><div class="student-grid">' +
+      '<div class="field">RTU email (detected automatically)<div class="auto-email" title="Detected from the Google account you are signed in with. You do not need to type it.">' +
+      '<span class="lock">🔒</span><span class="addr">' + esc(BOOT.email) + '</span><span class="ok-tag">✓ detected</span></div></div>' +
+      '<label class="field">Last name<input type="text" data-student="lastName" autocomplete="family-name" value="' + esc(p.lastName || "") + '" required></label>' +
+      '<label class="field">First name<input type="text" data-student="firstName" autocomplete="given-name" value="' + esc(p.firstName || "") + '" required></label>' +
+      '<label class="field">Middle name<input type="text" data-student="middleName" value="' + esc(p.middleName || "") + '" placeholder="Leave blank if none"></label>' +
+      '<label class="field">Student number<input type="text" data-student="studentNo" value="' + esc(p.studentNo || "") + '" required></label>' +
+      '<label class="field">Block and section' + sectionField + "</label></div></div>" +
+      '<p class="consent">Your RTU email, details, answers, solutions and score are recorded for your instructor. ' +
+      "Your work is also saved as a draft on this device until you submit.</p>" +
+      '<div class="btnrow"><button class="btn" id="submit-btn" type="submit"' + (st.canSubmit ? "" : " disabled") + ">Submit activity</button></div>" +
+      '<div id="activity-status" class="status" role="status" aria-live="polite"></div></form></section>';
+  }
+
+  function initActivity(d) {
+    var form = document.getElementById("activity-form");
+    if (!form) return;
+    var itemsBox = document.getElementById("activity-items");
+    var statusBox = document.getElementById("activity-status");
+    var submitBtn = document.getElementById("submit-btn");
+    var draftKey = "cal02-draft-" + BOOT.email + "-" + d.module.n;
+    // The items live outside the form element in the fragment; move them in, before the details card.
+    form.insertBefore(itemsBox, form.firstChild.nextSibling);
+
+    function show(kind, html) {
+      statusBox.className = "status show " + kind;
+      statusBox.innerHTML = html;
+      statusBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    // Equation toolbar and live preview
+    function insertAtCursor(ta, text, isLatex) {
+      var start = ta.selectionStart, end = ta.selectionEnd, v = ta.value;
+      if (isLatex) {
+        var inside = (v.slice(0, start).match(/\$/g) || []).length % 2 === 1;
+        if (!inside) text = "$" + text + "$";
+      }
+      ta.value = v.slice(0, start) + text + v.slice(end);
+      var caret = start + text.length - (isLatex && text.charAt(text.length - 1) === "$" ? 1 : 0);
+      ta.focus();
+      ta.setSelectionRange(caret, caret);
+      ta.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    var timers = {};
+    function preview(ta) {
+      var box = ta.closest(".solution-box").querySelector(".sol-preview");
+      clearTimeout(timers[ta.id]);
+      timers[ta.id] = setTimeout(function () {
+        box.textContent = ta.value.replace(/\$\$([^$]+)\$\$/g, "\\[$1\\]").replace(/\$([^$]+)\$/g, "\\($1\\)");
+        typeset(box);
+      }, 300);
+    }
+    form.querySelectorAll(".solution-box").forEach(function (sb) {
+      var ta = sb.querySelector("textarea");
+      sb.querySelectorAll(".sym").forEach(function (b) {
+        b.addEventListener("mousedown", function (e) { e.preventDefault(); });
+        b.addEventListener("click", function () { insertAtCursor(ta, b.dataset.insert, b.dataset.latex === "1"); });
+      });
+      ta.addEventListener("input", function () { preview(ta); });
+    });
+
+    // Shows how a typed answer was read ("We read this as ..."), so students catch typing mistakes early.
+    function varsOf(item) { return (item.dataset.vars || "x").split(","); }
+    function checkAnswer(item, v) {
+      if (item.dataset.type === "numeric") {
+        if (isFinite(parseNumber(v))) return { ok: true, plain: true };
+        try {
+          var x = MathExpr.numberOf(v);
+          if (!isFinite(x)) return { ok: false, msg: "This value is undefined. Check your answer." };
+          return { ok: true, tex: MathExpr.latex(MathExpr.parse(v, [])) + "\\approx " + Number(x.toPrecision(6)) };
+        } catch (e) { return { ok: false, msg: e.message }; }
+      }
+      try {
+        var tree = MathExpr.parse(v, varsOf(item));
+        var needC = item.dataset.constant === "1", hasC = MathExpr.hasC(tree);
+        if (needC && !hasC) return { ok: false, msg: "This is an antiderivative: remember to add + C.", tex: MathExpr.latex(tree) };
+        if (!needC && hasC) return { ok: false, msg: "This answer does not need + C.", tex: MathExpr.latex(tree) };
+        return { ok: true, tex: MathExpr.latex(tree) };
+      } catch (e) { return { ok: false, msg: e.message }; }
+    }
+    var rbTimers = {};
+    function readBack(item) {
+      var box = item.querySelector(".readback");
+      if (!box) return;
+      clearTimeout(rbTimers[item.dataset.id]);
+      rbTimers[item.dataset.id] = setTimeout(function () {
+        var v = item.querySelector(".answer-row input").value.trim();
+        if (!v) { box.innerHTML = ""; box.className = "readback"; return; }
+        var r = checkAnswer(item, v);
+        if (r.plain) { box.innerHTML = ""; box.className = "readback"; return; }
+        box.className = "readback " + (r.ok ? "ok" : "bad");
+        box.innerHTML = (r.tex ? "We read this as: \\(" + r.tex + "\\)" : "") + (r.msg ? (r.tex ? "<br>" : "") + "⚠️ " + esc(r.msg) : "");
+        typeset(box);
+      }, 350);
+    }
+    form.querySelectorAll(".item").forEach(function (item) {
+      if (!graded(item.dataset.type)) return;
+      var inp = item.querySelector(".answer-row input");
+      if (inp) inp.addEventListener("input", function () { readBack(item); });
+    });
+
+    function collect() {
+      var data = { student: {}, answers: {}, solutions: {} };
+      form.querySelectorAll("[data-student]").forEach(function (el) { data.student[el.dataset.student] = el.value.trim(); });
+      form.querySelectorAll(".item").forEach(function (item) {
+        var id = item.dataset.id;
+        if (item.dataset.type === "mc") {
+          var picked = item.querySelector("input[type=radio]:checked");
+          data.answers[id] = picked ? Number(picked.value) : "";
+        } else if (graded(item.dataset.type)) {
+          data.answers[id] = item.querySelector(".answer-row input").value.trim();
+        } else {
+          data.answers[id] = item.querySelector("textarea.reflection").value.trim();
+        }
+        var sol = item.querySelector(".sol-input");
+        if (sol) data.solutions[id] = sol.value.trim();
+      });
+      return data;
+    }
+
+    // Restore draft
+    var draft = load(draftKey) || {};
+    form.querySelectorAll(".item").forEach(function (item) {
+      var id = item.dataset.id, v = (draft.answers || {})[id];
+      if (v !== undefined && v !== "") {
+        if (item.dataset.type === "mc") {
+          var r = item.querySelector('input[type=radio][value="' + v + '"]');
+          if (r) r.checked = true;
+        } else if (graded(item.dataset.type)) { item.querySelector(".answer-row input").value = v; readBack(item); }
+        else item.querySelector("textarea.reflection").value = v;
+      }
+      var sol = item.querySelector(".sol-input");
+      if (sol && (draft.solutions || {})[id]) { sol.value = draft.solutions[id]; preview(sol); }
+    });
+    form.addEventListener("input", function () {
+      var c = collect();
+      store(draftKey, { answers: c.answers, solutions: c.solutions });
+    });
+    form.addEventListener("change", function () {
+      var c = collect();
+      store(draftKey, { answers: c.answers, solutions: c.solutions });
+    });
+
+    if (!d.state.canSubmit) {
+      form.querySelectorAll("input, textarea, select, button").forEach(function (el) { el.disabled = true; });
+      return;
+    }
+
+    function parseNumber(s) {
+      var t = String(s).replace(/\s+/g, "").replace(/[−–]/g, "-");
+      t = /^[-+]?\d{1,3}(,\d{3})+(\.\d+)?$/.test(t) ? t.replace(/,/g, "") : t.replace(/,/g, ".");
+      var m = t.match(/^([-+]?\d*\.?\d+)(?:[x×*]10\^?([-+]?\d+))?$/i);
+      if (m) return Number(m[1]) * Math.pow(10, m[2] ? Number(m[2]) : 0);
+      return Number(t);
+    }
+    function label(n) { return "Item " + n; }
+
+    function showFeedback(res) {
+      var right = [], wrong = [];
+      form.querySelectorAll(".item").forEach(function (item, i) {
+        var id = item.dataset.id, verdict = res.results ? res.results[id] : undefined;
+        var v = item.querySelector(".verdict");
+        item.classList.remove("correct", "wrong");
+        v.textContent = "";
+        if (verdict === true) { item.classList.add("correct"); v.textContent = "✓ Correct"; right.push(i + 1); }
+        else if (verdict === false) {
+          item.classList.add("wrong");
+          wrong.push(i + 1);
+          var msg = "✗ Mistake.";
+          if (res.key && res.key[id] !== undefined && res.key[id] !== "") {
+            if (item.dataset.type === "mc") {
+              var choice = item.querySelectorAll(".choice-text")[res.key[id]];
+              msg += " Correct answer: " + String.fromCharCode(65 + Number(res.key[id])) + ". " + (choice ? choice.textContent : "");
+            } else if (item.dataset.type === "expr") {
+              try {
+                msg += " Correct answer: \\(" + MathExpr.latex(MathExpr.parse(String(res.key[id]), varsOf(item))) +
+                  (item.dataset.constant === "1" ? " + C" : "") + "\\)";
+              } catch (e) { msg += " Correct answer: " + res.key[id]; }
+            } else {
+              var unit = item.querySelector(".unit");
+              msg += " Correct answer: " + Number(Number(res.key[id]).toPrecision(4)) + (unit ? " " + unit.textContent : "");
+            }
+          } else msg += " Check your solution against the discussion and the worked examples.";
+          v.textContent = msg;
+          if (item.dataset.type === "expr") typeset(v);
+        }
+      });
+      return { right: right, wrong: wrong };
+    }
+
+    form.addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      var data = collect(), s = data.student;
+      if (!s.lastName || !s.firstName || !s.studentNo || !s.blockSection) {
+        show("err", "Please fill in your last name, first name, student number, and block and section.");
+        return;
+      }
+      var missing = [], bad = [], noSol = [];
+      form.querySelectorAll(".item").forEach(function (item, i) {
+        var id = item.dataset.id, v = data.answers[id];
+        if (v === "" || v === undefined) missing.push(i + 1);
+        else if (graded(item.dataset.type)) {
+          var r = checkAnswer(item, v);
+          if (!r.ok) bad.push("item " + (i + 1) + ": " + r.msg);
+        }
+        if (REQUIRE_NUMERIC_SOLUTIONS && graded(item.dataset.type) && !data.solutions[id]) noSol.push(i + 1);
+      });
+      if (missing.length) { show("err", "Please answer every item before submitting. Missing: item " + missing.join(", ") + "."); return; }
+      if (bad.length) { show("err", "Please fix these answers before submitting:<br>" + bad.map(esc).join("<br>")); return; }
+      if (noSol.length) { show("err", "Please write your solution for item " + noSol.join(", ") + " in its solution box."); return; }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Submitting…";
+      show("info", "Sending your answers to your instructor…");
+      call("api_submit", d.module.n, { student: s, answers: data.answers, solutions: data.solutions }).then(function (res) {
+        var fb = showFeedback(res);
+        var left = res.attemptsLeft < 0 ? "You may submit again if you wish."
+          : res.attemptsLeft > 0 ? "You have " + res.attemptsLeft + " attempt" + (res.attemptsLeft === 1 ? "" : "s") + " left. Fix the items marked ✗ and submit again if you wish."
+          : "This was your last attempt." + (res.key ? " The correct answers are now shown under your mistakes." : "");
+        show("ok", "<strong>Submitted!</strong> Attempt " + res.attempt + ". Your score: <strong>" + res.score + " / " + res.total + "</strong>" +
+          "<br>Correct: " + (fb.right.length ? fb.right.map(label).join(", ") : "none") +
+          "<br>Mistakes: " + (fb.wrong.length ? fb.wrong.map(label).join(", ") : "none. Excellent work!") +
+          "<br>" + left + "<br><small>Your result has been recorded.</small>");
+        if (res.attemptsLeft === 0) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = "No attempts left";
+          return;
+        }
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit activity";
+      }).catch(function (e) {
+        show("err", "Submission failed: " + esc(e.message));
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit activity";
+      });
+    });
+  }
+
+  // ---------- page chrome ----------
+  function initScroll() {
+    var progress = document.getElementById("progress"), backtop = document.getElementById("backtop");
+    var links = [].slice.call(document.querySelectorAll("nav.top a:not(.home)"));
+    var sections = [].slice.call(document.querySelectorAll("header.hero[id], main section[id], .wrap section[id]"));
+    function update() {
+      var h = document.documentElement, max = h.scrollHeight - h.clientHeight;
+      progress.style.width = (max ? 100 * h.scrollTop / max : 0) + "%";
+      backtop.classList.toggle("show", h.scrollTop > 500);
+      var current = sections.length ? sections[0].id : "";
+      sections.forEach(function (s) { if (s.getBoundingClientRect().top <= 140) current = s.id; });
+      links.forEach(function (a) {
+        var on = a.getAttribute("href") === "#" + current;
+        a.classList.toggle("active", on);
+        if (on) {
+          var nav = a.parentNode, l = a.offsetLeft, r = l + a.offsetWidth;
+          if (l < nav.scrollLeft || r > nav.scrollLeft + nav.clientWidth) nav.scrollLeft = l - 40;
+        }
+      });
+    }
+    if (scrollHandler) removeEventListener("scroll", scrollHandler);
+    scrollHandler = update;
+    addEventListener("scroll", update, { passive: true });
+    update();
+  }
+  var scrollHandler = null;
+  document.getElementById("backtop").addEventListener("click", function () { window.scrollTo({ top: 0, behavior: "smooth" }); });
+
+  function fail(msg) {
+    app.innerHTML = '<main><section class="ch"><h2>Something went wrong</h2><p>' + esc(msg) +
+      '</p><p><a target="_top" href="' + esc(link("")) + '">Try again</a></p></section></main>';
+  }
+
+  // Move between the home page and the modules inside this page. Full page loads of the web app
+  // address can fail with Google's "unable to open the file" when the browser is signed in to
+  // several Google accounts, so the links only fall back to a real page load if this fails.
+  function navigate(module, hash, push, ps) {
+    clearInterval(videoTimer);
+    renderCount++;
+    document.body.className = module || ps ? "" : "landing";
+    app.innerHTML = '<div class="loading"><div class="spinner"></div>Loading…</div>';
+    window.scrollTo(0, 0);
+    var p = module ? call("api_module", module) : ps ? call("api_problemset", ps) : call("api_home");
+    p.then(function (d) {
+      D = d;
+      route();
+      if (push && window.google && google.script && google.script.history) {
+        google.script.history.push({ module: module, ps: ps || 0 },
+          module ? { module: String(module) } : ps ? { ps: String(ps) } : {}, hash || "");
+      }
+      if (hash) jumpTo(hash);
+    }).catch(function (e) { fail(e.message); });
+  }
+
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("a[href]");
+    if (!a || e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return;
+    var href = a.getAttribute("href");
+    if (href.charAt(0) === "#" || a.target === "_blank" || href.indexOf(BOOT.url) !== 0) return;
+    e.preventDefault();
+    var m = href.match(/[?&]module=(\d+)/), ps = href.match(/[?&]ps=(\d+)/);
+    var hash = (href.split("#")[1] || "");
+    navigate(m ? Number(m[1]) : 0, hash ? "#" + hash : "", true, ps ? Number(ps[1]) : 0);
+  });
+
+  if (window.google && google.script && google.script.history) {
+    google.script.history.setChangeHandler(function (ev) {
+      var prm = (ev && ev.location && ev.location.parameter) || {};
+      navigate(prm.module ? Number(prm.module) : 0, "", false, prm.ps ? Number(prm.ps) : 0);
+    });
+  }
+
+  function start() {
+    if (BOOT.error) return fail(BOOT.error);
+    D = BOOT.data;
+    if (!D) {
+      // Started without page data: read the module number from the address bar instead.
+      if (!BOOT.module && !BOOT.ps && window.google && google.script && google.script.url) {
+        google.script.url.getLocation(function (loc) {
+          var prm = (loc && loc.parameter) || {};
+          navigate(prm.module ? Number(prm.module) : 0, loc && loc.hash ? "#" + loc.hash : "", false, prm.ps ? Number(prm.ps) : 0);
+        });
+        return;
+      }
+      navigate(BOOT.module || 0, location.hash, false, BOOT.ps || 0);
+      return;
+    }
+    route();
+  }
+  function route() {
+    // The server also sends the email and site address with every view, in case the page started without them.
+    if (D.email) BOOT.email = D.email;
+    if (D.url) BOOT.url = D.url;
+    if (D.view === "module") renderModule(D); else if (D.view === "problemset") renderProblemSet(D); else renderHome(D);
+  }
+  start();
+})();
+</script>
+</body>

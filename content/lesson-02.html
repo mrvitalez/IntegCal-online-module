@@ -1,0 +1,76 @@
+<section class="ch accent" id="objectives">
+<h2><span class="num">🔗</span>What you will learn</h2>
+<p class="lead">By the end of this module, you can:</p>
+<ul class="checks"><li>Differentiate functions defined by integrals with FTC Part 1, including variable limits that need the Chain Rule.</li><li>Evaluate definite integrals with FTC Part 2 and recognise when it does not apply.</li><li>Find indefinite integrals using the table of basic antiderivatives, and check them by differentiation.</li><li>Apply the Net Change Theorem to rates of change in context.</li><li>Distinguish displacement from total distance and compute both from a velocity function.</li></ul>
+<div class="callout"><span class="label">How to use this module</span>
+(1) Read each section with pen and paper. (2) Try every worked example before opening its solution. (3) Watch the lecture video and answer its questions. (4) Answer the activity, write your solutions, and submit. Your score is recorded for your instructor. For the full treatment, read §4.3, §4.4 of Stewart, <em>Calculus</em>, 8th edition.</div>
+</section>
+<section class="ch" id="s1"><h2><span class="num">4.3</span>The Fundamental Theorem of Calculus</h2><p>In Module 1 you computed \(\int_0^3 x^2\,dx = 9\) with a page of summation formulas. Stewart §4.3 shows a far shorter route, and in doing so reveals that differentiation and integration are <strong>inverse processes</strong>. This link is called the Fundamental Theorem of Calculus (FTC).</p>
+<p><strong>The area function.</strong> Fix a continuous \(f\) on \([a,b]\) and define
+\[g(x) = \int_a^x f(t)\,dt, \qquad a \le x \le b.\]
+For each \(x\), \(g(x)\) is a number: the net area under \(f\) from \(a\) up to \(x\). As \(x\) moves right, \(g(x)\) changes. How fast? If you push \(x\) a tiny step \(h\) to the right, you add a thin strip of width \(h\) and height about \(f(x)\), so \(g(x+h) - g(x) \approx f(x)\,h\). Dividing by \(h\) and letting \(h \to 0\) suggests \(g'(x) = f(x)\).</p>
+<div class="callout blue"><span class="label">FTC, Part 1</span> If \(f\) is continuous on \([a,b]\), then \(g(x) = \int_a^x f(t)\,dt\) is continuous on \([a,b]\), differentiable on \((a,b)\), and
+\[\frac{d}{dx}\int_a^x f(t)\,dt = f(x).\]</div>
+<p>So \(\frac{d}{dx}\int_2^x \sqrt{1 + t^4}\,dt = \sqrt{1 + x^4}\), even though no simple formula for the integral exists. Just replace \(t\) by \(x\).</p>
+<p><strong>With the Chain Rule.</strong> If the upper limit is a function \(u = h(x)\) instead of \(x\), write \(\int_a^{h(x)} f(t)\,dt = g(u)\) and differentiate:
+\[\frac{d}{dx}\int_a^{h(x)} f(t)\,dt = f\big(h(x)\big)\,h'(x).\]
+If \(x\) appears in the <em>lower</em> limit, first flip the limits: \(\int_x^a f(t)\,dt = -\int_a^x f(t)\,dt\).</p>
+<p>If <em>both</em> limits depend on \(x\), split at any convenient constant \(a\): \(\int_{x}^{x^2} f(t)\,dt = \int_a^{x^2} f(t)\,dt - \int_a^{x} f(t)\,dt\), then differentiate each piece. For instance, \(\frac{d}{dx}\int_{x}^{x^2} \sqrt{t}\,dt = \sqrt{x^2}\cdot 2x - \sqrt{x} = 2x^2 - \sqrt{x}\) for \(x &gt; 0\). Notice that you never needed to find an antiderivative of \(\sqrt{t}\): FTC1 works directly with the integrand.</p>
+<div class="callout blue"><span class="label">FTC, Part 2</span> If \(f\) is continuous on \([a,b]\) and \(F\) is <em>any</em> antiderivative of \(f\) (that is, \(F' = f\)), then
+\[\int_a^b f(x)\,dx = F(b) - F(a).\]</div>
+<p>We write \(F(b) - F(a) = \big[F(x)\big]_a^b\). Now \(\int_0^3 x^2\,dx = \big[\tfrac{x^3}{3}\big]_0^3 = 9 - 0 = 9\) in one line. Similarly \(\int_0^{\pi} \sin x\,dx = \big[-\cos x\big]_0^{\pi} = 1 - (-1) = 2\): one arch of the sine curve has area exactly 2. Any antiderivative works, because an added constant \(C\) cancels in \(F(b) - F(a)\).</p>
+<p>Put together, the two parts say: integrate \(f\) and then differentiate, and you get \(f\) back (Part 1); differentiate \(F\) and then integrate, and you get the change \(F(b) - F(a)\) (Part 2).</p>
+<div class="callout warn"><span class="label">Common mistake</span> FTC2 needs \(f\) to be <em>continuous</em> on all of \([a,b]\). Blindly writing \(\int_{-1}^{1} x^{-2}\,dx = \big[-x^{-1}\big]_{-1}^{1} = -2\) gives a negative answer for a positive integrand. The function blows up at 0, so the theorem does not apply.</div><div class="callout blue"><span class="label">Key equations</span><div class="eq">\[ \frac{d}{dx}\int_a^x f(t)\,dt = f(x) \]</div><div class="eq">\[ \frac{d}{dx}\int_a^{h(x)} f(t)\,dt = f\big(h(x)\big)\,h'(x) \]</div><div class="eq">\[ \int_a^b f(x)\,dx = F(b) - F(a), \quad F' = f \]</div></div><figure><img src="https://raw.githubusercontent.com/mrvitalez/IntegCal-online-module/main/img/fig-02-1.png" alt="A positive curve over the interval 0 to 3. The region under it from 0 to x = 2 is shaded and a vertical line marks the position x." loading="lazy"><figcaption>Figure 2.1 The area function g(x) is the area under y = f(t) from a = 0 up to a variable right end x. Moving x a little to the right adds a thin strip of height about f(x).</figcaption></figure><figure><img src="https://raw.githubusercontent.com/mrvitalez/IntegCal-online-module/main/img/fig-02-2.png" alt="Two curves from 0 to 2 pi: the cosine curve and the sine curve. The sine curve rises while the cosine curve is above the axis and falls while it is below." loading="lazy"><figcaption>Figure 2.2 For f(t) = cos t, the area function is g(x) = sin x. Where f is positive, g increases; where f is negative, g decreases, exactly as g′ = f predicts.</figcaption></figure></section><section class="ch" id="s2"><h2><span class="num">4.4</span>Indefinite Integrals and the Net Change Theorem</h2><p>Because FTC2 turns definite integrals into antiderivative problems, it pays to have a good notation and a table of antiderivatives. Stewart §4.4 introduces the <strong>indefinite integral</strong>
+\[\int f(x)\,dx = F(x) + C \quad\text{means}\quad F'(x) = f(x).\]
+Be careful to tell the two kinds apart: a definite integral \(\int_a^b f(x)\,dx\) is a <em>number</em>, while an indefinite integral \(\int f(x)\,dx\) is a <em>family of functions</em>, one for each value of \(C\).</p>
+<p><strong>A short table.</strong> Each formula is checked by differentiating the right side.</p>
+<table>
+<tr><th>Integral</th><th>Result</th></tr>
+<tr><td>\(\int c f(x)\,dx\)</td><td>\(c\int f(x)\,dx\)</td></tr>
+<tr><td>\(\int [f(x) + g(x)]\,dx\)</td><td>\(\int f(x)\,dx + \int g(x)\,dx\)</td></tr>
+<tr><td>\(\int k\,dx\)</td><td>\(kx + C\)</td></tr>
+<tr><td>\(\int x^n\,dx\) \((n \ne -1)\)</td><td>\(\dfrac{x^{n+1}}{n+1} + C\)</td></tr>
+<tr><td>\(\int \sin x\,dx\)</td><td>\(-\cos x + C\)</td></tr>
+<tr><td>\(\int \cos x\,dx\)</td><td>\(\sin x + C\)</td></tr>
+<tr><td>\(\int \sec^2 x\,dx\)</td><td>\(\tan x + C\)</td></tr>
+<tr><td>\(\int \csc^2 x\,dx\)</td><td>\(-\cot x + C\)</td></tr>
+<tr><td>\(\int \sec x\tan x\,dx\)</td><td>\(\sec x + C\)</td></tr>
+<tr><td>\(\int \csc x\cot x\,dx\)</td><td>\(-\csc x + C\)</td></tr>
+</table>
+<p>Before integrating, rewrite roots and quotients as powers: \(\int \frac{x + 2}{\sqrt{x}}\,dx = \int (x^{1/2} + 2x^{-1/2})\,dx = \tfrac23 x^{3/2} + 4x^{1/2} + C\). There is no "quotient rule" for integrals, so you must simplify first.</p>
+<p>Trigonometric identities can do the same job. For example, \(\int \frac{\sin x}{\cos^2 x}\,dx\) is not in the table as written, but \(\frac{\sin x}{\cos^2 x} = \frac{1}{\cos x}\cdot\frac{\sin x}{\cos x} = \sec x\tan x\), so the answer is \(\sec x + C\). Always finish by differentiating your answer: if you get the integrand back, you are right. This check takes seconds and catches most sign errors (the minus signs in \(-\cos x\), \(-\cot x\) and \(-\csc x\) are the usual culprits).</p>
+<div class="callout warn"><span class="label">Common mistake</span> The integral of a product is <em>not</em> the product of the integrals: \(\int x\cdot x\,dx = \tfrac{x^3}{3} + C\), not \(\tfrac{x^2}{2}\cdot\tfrac{x^2}{2}\). Multiply out first.</div>
+<p><strong>The Net Change Theorem.</strong> FTC2 applied to a rate of change \(F'\) reads
+\[\int_a^b F'(x)\,dx = F(b) - F(a):\]
+the integral of a rate of change is the <em>net change</em>. If \(V'(t)\) is the rate (L/min) at which water enters a tank, \(\int_{t_1}^{t_2} V'(t)\,dt\) is the change in volume. If \(C'(x)\) is marginal cost, \(\int_{100}^{200} C'(x)\,dx\) is the extra cost of raising production from 100 to 200 units. The units of the answer are always (units of the rate) × (units of the variable), for example (L/min) × min = L.</p>
+<p><strong>Displacement versus distance.</strong> For a particle with velocity \(v(t)\):</p>
+<ul>
+<li>displacement \(= \int_{t_1}^{t_2} v(t)\,dt\) (net change in position; backward motion cancels forward motion);</li>
+<li>total distance \(= \int_{t_1}^{t_2} |v(t)|\,dt\). To compute it, find where \(v(t) = 0\), split the interval there, and add the absolute values of the pieces.</li>
+</ul>
+<p>For \(v(t) = t^2 - 4t + 3 = (t-1)(t-3)\) on \([0,4]\), the three pieces are \(\tfrac43, -\tfrac43, \tfrac43\). The displacement is \(\tfrac43\) but the distance is \(4\).</p><div class="callout blue"><span class="label">Key equations</span><div class="eq">\[ \int f(x)\,dx = F(x) + C \iff F'(x) = f(x) \]</div><div class="eq">\[ \int x^n\,dx = \frac{x^{n+1}}{n+1} + C \quad (n \ne -1) \]</div><div class="eq">\[ \int_a^b F'(x)\,dx = F(b) - F(a) \]</div><div class="eq">\[ \text{distance} = \int_{t_1}^{t_2} |v(t)|\,dt \]</div></div><figure><img src="https://raw.githubusercontent.com/mrvitalez/IntegCal-online-module/main/img/fig-02-3.png" alt="A parabola opening upward crossing the t-axis at t = 1 and t = 3. The regions between the curve and the axis on 0 to 1 and on 3 to 4 are above the axis; the region on 1 to 3 is below the axis and shaded in a different color." loading="lazy"><figcaption>Figure 2.3 Velocity v(t) = t² − 4t + 3 on [0, 4]. Displacement adds the signed areas (4/3 − 4/3 + 4/3 = 4/3); distance adds the three areas as positive numbers (total 4).</figcaption></figure></section>
+<section class="ch accent" id="takeaways">
+<h2><span class="num">★</span>Key takeaways</h2>
+<ul class="checks"><li>FTC Part 1: the derivative of an area function is the integrand, d/dx ∫ₐˣ f(t) dt = f(x); with a variable limit h(x), multiply by h′(x).</li><li>FTC Part 2: if F′ = f and f is continuous on [a, b], then ∫ₐᵇ f(x) dx = F(b) − F(a).</li><li>An indefinite integral is a family of antiderivatives F(x) + C; a definite integral is a single number.</li><li>Rewrite roots and quotients as powers before integrating, and check every antiderivative by differentiating.</li><li>The integral of a rate of change is the net change; for velocity, ∫v dt is displacement and ∫|v| dt is total distance.</li></ul>
+</section>
+
+<section class="ch" id="examples">
+<h2><span class="num">⟡</span>Worked examples</h2>
+<p class="lead">Try each example yourself first, then open the solution and compare your steps.</p>
+<div class="prob"><div class="head"><span class="n">Example 2.1</span>
+<span class="t">Derivatives of integrals with variable limits</span></div>
+<div class="body"><p>Find the derivative: (a) \(\displaystyle y = \int_1^{x^3} \sqrt{1 + t^2}\,dt\) &nbsp; (b) \(\displaystyle y = \int_x^{2} \cos(t^2)\,dt\).</p> <small class="muted">(Similar to Stewart §4.3, Examples 3 and 4)</small></div>
+<details class="ans"><summary>Show solution <small>(try it first)</small></summary>
+<div class="a"><p><strong>Strategy:</strong></p><p>Use FTC1. In (a) the upper limit is \(u = x^3\), so the Chain Rule adds a factor \(du/dx\). In (b) the variable is in the lower limit, so flip the limits first.</p><p><strong>Solution:</strong></p><p>(a) Let \(u = x^3\). Then \(\dfrac{dy}{dx} = \dfrac{d}{du}\left[\int_1^{u} \sqrt{1+t^2}\,dt\right]\dfrac{du}{dx} = \sqrt{1+u^2}\cdot 3x^2 = 3x^2\sqrt{1 + x^6}\).</p><p>(b) \(y = -\int_2^{x} \cos(t^2)\,dt\), so \(\dfrac{dy}{dx} = -\cos(x^2)\).</p><p><strong>Check:</strong></p><p>A frequent error in (a) is to write \(\sqrt{1 + x^6}\) and forget the factor \(3x^2\). In (b), think about the sign: increasing \(x\) shrinks the interval \([x, 2]\), so near \(x = 0\) (where \(\cos(t^2) &gt; 0\)) \(y\) should decrease, and indeed \(y' = -\cos(x^2) &lt; 0\) there.</p></div></details></div><div class="prob"><div class="head"><span class="n">Example 2.2</span>
+<span class="t">Evaluating with FTC Part 2</span></div>
+<div class="body"><p>Evaluate \(\displaystyle\int_1^4 \left(3\sqrt{x} - \frac{2}{x^2}\right)dx\).</p> <small class="muted">(Similar to Stewart §4.3, Example 7)</small></div>
+<details class="ans"><summary>Show solution <small>(try it first)</small></summary>
+<div class="a"><p><strong>Strategy:</strong></p><p>Rewrite as powers, find an antiderivative with the power rule, then substitute the limits.</p><p><strong>Solution:</strong></p><p>\(3\sqrt{x} - 2x^{-2}\) has antiderivative \(3\cdot\tfrac23 x^{3/2} - 2\cdot\dfrac{x^{-1}}{-1} = 2x^{3/2} + \dfrac{2}{x}\). So
+\[\int_1^4 \left(3\sqrt{x} - \frac{2}{x^2}\right)dx = \left[2x^{3/2} + \frac{2}{x}\right]_1^4 = \left(16 + \tfrac12\right) - (2 + 2) = \frac{25}{2}.\]</p><p><strong>Check:</strong></p><p>Differentiate \(2x^{3/2} + 2x^{-1}\): you get \(3x^{1/2} - 2x^{-2}\). ✔ The integrand is continuous on \([1,4]\) (no division by zero there), so FTC2 applies.</p></div></details></div><div class="prob"><div class="head"><span class="n">Example 2.3</span>
+<span class="t">Displacement and distance</span></div>
+<div class="body"><p>A particle moves along a line with velocity \(v(t) = t^2 - 2t - 3\) m/s for \(0 \le t \le 5\). Find (a) its displacement and (b) the total distance it travels.</p> <small class="muted">(Similar to Stewart §4.4, Example 6)</small></div>
+<details class="ans"><summary>Show solution <small>(try it first)</small></summary>
+<div class="a"><p><strong>Strategy:</strong></p><p>Displacement is \(\int_0^5 v\,dt\). For distance, find where \(v\) changes sign, split there, and add absolute values.</p><p><strong>Solution:</strong></p><p>An antiderivative is \(F(t) = \tfrac{t^3}{3} - t^2 - 3t\).</p><p>(a) Displacement \(= F(5) - F(0) = \tfrac{125}{3} - 25 - 15 = \tfrac{5}{3}\) m.</p><p>(b) \(v(t) = (t - 3)(t + 1)\) is negative on \([0, 3)\) and positive on \((3, 5]\).
+\[\int_0^3 v\,dt = F(3) - F(0) = 9 - 9 - 9 = -9, \qquad \int_3^5 v\,dt = \tfrac53 - (-9) = \tfrac{32}{3}.\]
+Distance \(= 9 + \tfrac{32}{3} = \tfrac{59}{3} \approx 19.7\) m.</p><p><strong>Check:</strong></p><p>The two pieces add back to the displacement: \(-9 + \tfrac{32}{3} = \tfrac53\). ✔ The particle goes 9 m backward, then \(32/3\) m forward, ending \(5/3\) m ahead of its start.</p></div></details></div>
+</section>

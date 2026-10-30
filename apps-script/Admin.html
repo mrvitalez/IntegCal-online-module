@@ -1,0 +1,489 @@
+<body class="admin">
+<div class="banner">🛠️ <b>CAL02 Admin</b> &nbsp;—&nbsp; instructor tools<span>&nbsp;·&nbsp; Rizal Technological University</span></div>
+<header class="hero"><div class="inner"><div class="txt">
+<span class="eyebrow">CAL02 · Instructor site</span>
+<h1>Course admin</h1>
+<p>Set the semester, block sections and modules, edit the answer key and videos, and review every student's work.
+Students never see this page.</p>
+<div class="hchips"><span class="who" id="who"></span><a class="cta" id="open-student" target="_blank" rel="noopener" href="#">🎓 Open student site</a>
+<a class="cta" id="open-sheet" target="_blank" rel="noopener" href="#" style="background:rgba(255,255,255,.14);color:#fff;box-shadow:none">📊 Open Google Sheet</a></div>
+</div></div></header>
+<main>
+<div class="admin-tabs" id="tabs"></div>
+<div id="view"><div class="loading"><div class="spinner"></div>Loading…</div></div>
+</main>
+<div class="toast" id="toast" hidden></div>
+
+<script>window.BOOT = <?!= boot ?>;</script>
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                   options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] },
+                   startup: { typeset: false } };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<script>
+(function () {
+  "use strict";
+  var BOOT = window.BOOT || {};
+  var A = null;          // admin_load() data
+  var tab = "overview";
+  var view = document.getElementById("view");
+  var TABS = [["overview", "📋 Overview"], ["settings", "📅 Semester"], ["sections", "🧑‍🤝‍🧑 Block sections"],
+              ["modules", "📚 Modules & videos"], ["key", "🔑 Answer key"], ["results", "📝 Results"],
+              ["record", "📒 Recordbook"], ["archive", "🗄️ Archive"]];
+
+  document.getElementById("who").textContent = "Signed in as " + (BOOT.email || "");
+  document.getElementById("open-sheet").href = BOOT.sheetUrl || "#";
+  function setStudentLink(url) {
+    var a = document.getElementById("open-student");
+    a.href = url || "#";
+    a.onclick = url ? null : function (e) {
+      e.preventDefault();
+      tab = "settings";
+      render();
+      toast("Paste your web app address (ending in /exec) in Student site address first.", true);
+    };
+  }
+  setStudentLink(BOOT.url);
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function call(fn) {
+    var args = [].slice.call(arguments, 1);
+    return new Promise(function (resolve, reject) {
+      var r = google.script.run.withSuccessHandler(resolve).withFailureHandler(function (e) {
+        reject(e && e.message ? e : new Error(String(e)));
+      });
+      r[fn].apply(r, args);
+    });
+  }
+  var toastTimer;
+  function toast(msg, err) {
+    var t = document.getElementById("toast");
+    t.textContent = msg;
+    t.className = "toast" + (err ? " err" : "");
+    t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.hidden = true; }, err ? 7000 : 3000);
+  }
+  function busy(btn, on, text) {
+    if (!btn) return;
+    if (on) { btn.dataset.label = btn.textContent; btn.textContent = text || "Saving…"; btn.disabled = true; }
+    else { btn.textContent = btn.dataset.label || btn.textContent; btn.disabled = false; }
+  }
+  function typeset(el) {
+    function go() {
+      if (window.MathJax && MathJax.typesetPromise) {
+        if (MathJax.typesetClear) MathJax.typesetClear([el]);
+        return MathJax.typesetPromise([el]).catch(function () {});
+      }
+      setTimeout(go, 300);
+    }
+    go();
+  }
+  function nice(ymd) {
+    if (!ymd) return "—";
+    var p = ymd.split("-").map(Number);
+    return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][p[1] - 1] + " " + p[2] + ", " + p[0];
+  }
+  function addDays(ymd, n) {
+    var p = ymd.split("-").map(Number);
+    return new Date(Date.UTC(p[0], p[1] - 1, p[2] + n)).toISOString().slice(0, 10);
+  }
+  function truthy(v) { return /^(true|yes|1|on)$/i.test(String(v)); }
+  function moduleOptions(sel) {
+    return A.modules.map(function (m) {
+      return '<option value="' + m.n + '"' + (m.n === sel ? " selected" : "") + ">Module " + m.n + ": " + esc(m.title) + "</option>";
+    }).join("");
+  }
+
+  function renderTabs() {
+    document.getElementById("tabs").innerHTML = TABS.map(function (t) {
+      return '<button type="button" data-tab="' + t[0] + '" class="' + (t[0] === tab ? "on" : "") + '">' + t[1] + "</button>";
+    }).join("");
+    document.querySelectorAll("#tabs button").forEach(function (b) {
+      b.onclick = function () { tab = b.dataset.tab; render(); };
+    });
+  }
+
+  function render() {
+    renderTabs();
+    ({ overview: overview, settings: settings, sections: sections, modules: modules, key: keyView,
+       results: results, record: record, archive: archive })[tab]();
+  }
+
+  // ---------- overview ----------
+  function overview() {
+    var sem = A.semester;
+    var phase = { before: "Not started yet", open: "In progress", after: "Ended" }[sem.phase];
+    var subs = A.modules.reduce(function (s, m) { return s + m.counts.submissions; }, 0);
+    var open = A.modules.filter(function (m) { return m.state.canSubmit; }).length;
+    var rows = A.modules.map(function (m) {
+      var st = m.state.canSubmit ? "✅ Accepting" : m.state.canView ? "👁️ View only" : "🔒 " + esc(m.state.reason);
+      return "<tr><td>" + m.n + "</td><td>" + esc(m.title) + "</td><td>" + st + "</td><td>" + nice(m.dueOn) +
+        "</td><td>" + (m.video ? "🎬 " + esc(m.video.title) : "—") + "</td><td>" + m.counts.students + "</td><td>" + m.counts.submissions + "</td></tr>";
+    }).join("");
+    view.innerHTML = '<section class="ch"><h2>📋 Overview</h2>' +
+      '<div class="grid2"><div class="stat"><div class="l">Semester</div><div class="v">' + esc(phase) + '</div><div class="muted">' +
+      esc(sem.name || "") + "<br>" + nice(sem.start) + " → " + nice(sem.end) + "</div></div>" +
+      '<div class="stat"><div class="l">Students</div><div class="v">' + A.students + "</div><div class=\"muted\">have submitted at least once</div></div>" +
+      '<div class="stat"><div class="l">Submissions</div><div class="v">' + subs + '</div><div class="muted">all modules, all attempts</div></div>' +
+      '<div class="stat"><div class="l">Activities open</div><div class="v">' + open + " / " + A.modules.length + '</div><div class="muted">today is ' + nice(A.today) + "</div></div></div>" +
+      (!sem.start || !sem.end ? '<div class="notice">⚠️ Set the semester start and end dates in the <b>Semester</b> tab.</div>' : "") +
+      '<h3>Modules</h3><div class="tw"><table class="data"><thead><tr><th>#</th><th>Module</th><th>Status</th><th>Due</th><th>Video</th><th>Students</th><th>Submissions</th></tr></thead><tbody>' +
+      rows + "</tbody></table></div>" +
+      '<h3>Links</h3>' + (A.studentUrl
+        ? '<p>Student site (share this with your class): <a target="_blank" rel="noopener" href="' + esc(A.studentUrl) + '">' + esc(A.studentUrl) + "</a></p>" +
+          '<p>This admin site: <a target="_blank" rel="noopener" href="' + esc(A.studentUrl + "?page=admin") + '">' + esc(A.studentUrl) + "?page=admin</a></p>"
+        : '<div class="notice">⚠️ <b>Student site address not set.</b> In the <b>Semester</b> tab, paste your web app URL ' +
+          "(Deploy → Manage deployments, the address ending in /exec) so that links to the student site work.</div>") +
+      '<p><button class="btn ghost small" id="refresh-content">↻ Refresh lesson content from GitHub</button> ' +
+      '<span class="muted">Use this after editing lesson files on GitHub.</span></p></section>';
+    document.getElementById("refresh-content").onclick = function () {
+      var b = this;
+      busy(b, true, "Refreshing…");
+      call("admin_refreshContent").then(function (d) { A = d; toast("Lesson content refreshed."); render(); })
+        .catch(function (e) { busy(b, false); toast(e.message, true); });
+    };
+  }
+
+  // ---------- settings ----------
+  function settings() {
+    var s = A.settings;
+    view.innerHTML = '<section class="ch"><h2>📅 Semester settings</h2>' +
+      '<p class="lead">Students can only open modules from the start date. After the end date, activities stop accepting submissions.</p>' +
+      '<div class="form-grid">' +
+      '<label class="field wide">Student site address (your web app URL ending in /exec, from Deploy → Manage deployments)' +
+      '<input type="text" id="studentUrl" placeholder="https://script.google.com/a/macros/rtu.edu.ph/s/…/exec" value="' + esc(s.studentUrl) + '"></label>' +
+      '<label class="field wide">Syllabus link (opened by the Syllabus button on the student home page)' +
+      '<input type="text" id="syllabusUrl" value="' + esc(s.syllabusUrl) + '"></label>' +
+      '<label class="field wide">Consultation booking link (shown under Consultation hours)' +
+      '<input type="text" id="consultationUrl" value="' + esc(s.consultationUrl) + '"></label>' +
+      '<label class="field wide">Semester name (shown to students)<input type="text" id="semesterName" value="' + esc(s.semesterName) + '"></label>' +
+      '<label class="field">Start date<input type="date" id="startDate" value="' + esc(s.startDate) + '"></label>' +
+      '<label class="field">End date<input type="date" id="endDate" value="' + esc(s.endDate) + '"></label>' +
+      '<label class="field">Attempts per activity (0 = unlimited)<input type="number" min="0" id="maxAttempts" value="' + esc(s.maxAttempts) + '"></label>' +
+      '<label class="field">Days after the end date before archiving<input type="number" min="0" id="archiveDelayDays" value="' + esc(s.archiveDelayDays) + '"></label>' +
+      '<label class="check wide"><input type="checkbox" id="revealAnswers"' + (truthy(s.revealAnswers) ? " checked" : "") +
+      "> Show students the correct answers after their last attempt</label>" +
+      '<label class="check wide"><input type="checkbox" id="autoArchive"' + (truthy(s.autoArchive) ? " checked" : "") +
+      "> Automatically archive and clear the records after the semester (a copy is saved in Drive first)</label>" +
+      '<label class="field wide">Announcement on the student home page (optional)<textarea id="announcement">' + esc(s.announcement) + "</textarea></label>" +
+      '</div><div class="btnrow" style="margin-top:14px"><button class="btn" id="save">Save settings</button></div></section>';
+    document.getElementById("save").onclick = function () {
+      var b = this;
+      var obj = {};
+      ["studentUrl", "syllabusUrl", "consultationUrl", "semesterName", "startDate", "endDate", "maxAttempts", "archiveDelayDays", "announcement"].forEach(function (k) {
+        obj[k] = document.getElementById(k).value;
+      });
+      obj.revealAnswers = document.getElementById("revealAnswers").checked ? "TRUE" : "FALSE";
+      obj.autoArchive = document.getElementById("autoArchive").checked ? "TRUE" : "FALSE";
+      busy(b, true);
+      call("admin_saveSettings", obj).then(function (d) { A = d; setStudentLink(A.studentUrl); toast("Settings saved."); render(); })
+        .catch(function (e) { busy(b, false); toast(e.message, true); });
+    };
+  }
+
+  // ---------- sections ----------
+  function sections() {
+    view.innerHTML = '<section class="ch"><h2>🧑‍🤝‍🧑 Block sections</h2>' +
+      '<p class="lead">Students choose their block and section from this list in every activity. Type one per line, then save. ' +
+      "Edit it each semester.</p>" +
+      '<label class="field">Block sections (one per line)<textarea id="list" style="min-height:220px">' + esc(A.sections.join("\n")) + "</textarea></label>" +
+      '<div class="btnrow" style="margin-top:14px"><button class="btn" id="save">Save block sections</button></div>' +
+      '<h3>Preview</h3><select style="max-width:360px"><option>Choose…</option>' + A.sections.map(function (s) { return "<option>" + esc(s) + "</option>"; }).join("") +
+      "</select></section>";
+    document.getElementById("save").onclick = function () {
+      var b = this;
+      var list = document.getElementById("list").value.split("\n");
+      busy(b, true);
+      call("admin_saveSections", list).then(function (s) { A.sections = s; toast("Block sections saved (" + s.length + ")."); render(); })
+        .catch(function (e) { busy(b, false); toast(e.message, true); });
+    };
+  }
+
+  // ---------- modules & videos ----------
+  var editing = 0;
+  function modules() {
+    var rows = A.modules.map(function (m) {
+      return '<tr data-n="' + m.n + '"><td>' + m.n + "</td><td>" + esc(m.title) + '</td><td><input type="checkbox" class="vis"' + (m.visible ? " checked" : "") +
+        '></td><td><input type="date" class="opens" value="' + esc(m.opensOn) + '"></td><td><input type="date" class="due" value="' + esc(m.dueOn) +
+        '"></td><td>' + (m.video ? esc(m.video.title) : "—") + '</td><td class="row-actions"><button class="btn small save-row">Save</button>' +
+        '<button class="btn ghost small edit-video">Edit video</button></td></tr>';
+    }).join("");
+    view.innerHTML = '<section class="ch"><h2>📚 Modules & videos</h2>' +
+      '<p class="lead"><b>Visible</b> shows the module to students. <b>Opens on</b> (optional) keeps it hidden until that date. ' +
+      "<b>Due on</b> (optional) is the last day the activity accepts submissions.</p>" +
+      '<div class="tw"><table class="data"><thead><tr><th>#</th><th>Module</th><th>Visible</th><th>Opens on</th><th>Due on</th><th>Video</th><th></th></tr></thead><tbody>' +
+      rows + '</tbody></table></div><div id="video-editor"></div></section>';
+    view.querySelectorAll("tr[data-n]").forEach(function (tr) {
+      var n = Number(tr.dataset.n);
+      tr.querySelector(".save-row").onclick = function () {
+        var b = this, m = find(n);
+        busy(b, true, "…");
+        call("admin_saveModule", n, { visible: tr.querySelector(".vis").checked, opensOn: tr.querySelector(".opens").value,
+          dueOn: tr.querySelector(".due").value, video: m.video ? Object.assign({}, m.video) : {}, checkpoints: m.checkpoints })
+          .then(function (d) { A = d; toast("Module " + n + " saved."); render(); })
+          .catch(function (e) { busy(b, false); toast(e.message, true); });
+      };
+      tr.querySelector(".edit-video").onclick = function () { editing = n; videoEditor(); };
+    });
+    if (editing) videoEditor();
+  }
+  function find(n) { return A.modules.filter(function (m) { return m.n === n; })[0]; }
+
+  function videoEditor() {
+    var m = find(editing), v = m.video || {};
+    var cps = JSON.parse(JSON.stringify(m.checkpoints || []));
+    var box = document.getElementById("video-editor");
+    function cpHtml(c, i) {
+      return '<div class="cp-edit" data-i="' + i + '"><div class="form-grid">' +
+        '<label class="field">Pause at (seconds, mm:ss, or %)<input type="text" class="at" value="' + esc(c.at) + '"></label>' +
+        '<label class="field wide">Question<input type="text" class="q" value="' + esc(c.q) + '"></label>' +
+        '<label class="field wide">Choices (one per line)<textarea class="choices">' + esc((c.choices || []).join("\n")) + "</textarea></label>" +
+        '<label class="field">Correct choice<select class="answer">' + (c.choices || ["", ""]).map(function (_, j) {
+          return '<option value="' + j + '"' + (Number(c.answer) === j ? " selected" : "") + ">" + String.fromCharCode(65 + j) + "</option>";
+        }).join("") + "</select></label>" +
+        '<label class="field wide">Explanation shown after answering<input type="text" class="explain" value="' + esc(c.explain || "") + '"></label>' +
+        '</div><button class="btn danger small remove" style="margin-top:8px">Remove question</button></div>';
+    }
+    function draw() {
+      box.innerHTML = '<h3>🎬 Video for Module ' + m.n + ": " + esc(m.title) + "</h3>" +
+        '<div class="form-grid"><label class="field wide">YouTube link or video ID<input type="text" id="v-id" value="' + esc(v.youtubeId || "") + '"></label>' +
+        '<label class="field">Video title<input type="text" id="v-title" value="' + esc(v.title || "") + '"></label>' +
+        '<label class="field">Speaker<input type="text" id="v-speaker" value="' + esc(v.speaker || "") + '"></label>' +
+        '<label class="field">Source (citation)<input type="text" id="v-source" value="' + esc(v.source || "") + '"></label>' +
+        '<label class="field">Source link<input type="text" id="v-url" value="' + esc(v.sourceUrl || "") + '"></label>' +
+        '<label class="field">License<input type="text" id="v-license" value="' + esc(v.license || "") + '"></label></div>' +
+        (v.youtubeId ? '<div class="video-wrap" style="margin-top:14px;max-width:640px"><iframe src="https://www.youtube.com/embed/' + encodeURIComponent(v.youtubeId) +
+          '" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>' : "") +
+        '<h3>Questions during the video</h3><p class="muted">“35%” pauses about a third of the way through, whatever the length. ' +
+        "After watching, you can change these to exact times such as 4:10.</p>" +
+        '<div id="cps">' + cps.map(cpHtml).join("") + "</div>" +
+        '<div class="btnrow"><button class="btn ghost small" id="add-cp">+ Add question</button></div>' +
+        '<div class="btnrow" style="margin-top:14px"><button class="btn" id="save-video">Save video</button><button class="btn ghost" id="close-video">Close</button></div>';
+      box.querySelectorAll(".cp-edit").forEach(function (el) {
+        el.querySelector(".remove").onclick = function () { read(); cps.splice(Number(el.dataset.i), 1); draw(); };
+        el.querySelector(".choices").oninput = function () {
+          var n = this.value.split("\n").filter(function (x) { return x.trim(); }).length;
+          var sel = el.querySelector(".answer"), cur = Number(sel.value);
+          sel.innerHTML = Array.from({ length: Math.max(n, 2) }, function (_, j) {
+            return '<option value="' + j + '"' + (j === cur ? " selected" : "") + ">" + String.fromCharCode(65 + j) + "</option>";
+          }).join("");
+        };
+      });
+      document.getElementById("add-cp").onclick = function () { read(); cps.push({ at: "50%", q: "", choices: ["", ""], answer: 0, explain: "" }); draw(); };
+      document.getElementById("close-video").onclick = function () { editing = 0; box.innerHTML = ""; };
+      document.getElementById("save-video").onclick = function () {
+        var b = this;
+        read();
+        var tr = view.querySelector('tr[data-n="' + m.n + '"]');
+        var video = { youtubeId: document.getElementById("v-id").value, title: document.getElementById("v-title").value,
+          speaker: document.getElementById("v-speaker").value, source: document.getElementById("v-source").value,
+          sourceUrl: document.getElementById("v-url").value, license: document.getElementById("v-license").value };
+        busy(b, true);
+        call("admin_saveModule", m.n, { visible: tr.querySelector(".vis").checked, opensOn: tr.querySelector(".opens").value,
+          dueOn: tr.querySelector(".due").value, video: video, checkpoints: cps })
+          .then(function (d) { A = d; toast("Video saved."); render(); })
+          .catch(function (e) { busy(b, false); toast(e.message, true); });
+      };
+      box.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    function read() {
+      box.querySelectorAll(".cp-edit").forEach(function (el) {
+        var i = Number(el.dataset.i);
+        cps[i] = { at: el.querySelector(".at").value.trim(), q: el.querySelector(".q").value.trim(),
+          choices: el.querySelector(".choices").value.split("\n").map(function (x) { return x.trim(); }).filter(String),
+          answer: Number(el.querySelector(".answer").value), explain: el.querySelector(".explain").value.trim() };
+      });
+      v = { youtubeId: document.getElementById("v-id").value, title: document.getElementById("v-title").value,
+        speaker: document.getElementById("v-speaker").value, source: document.getElementById("v-source").value,
+        sourceUrl: document.getElementById("v-url").value, license: document.getElementById("v-license").value };
+    }
+    draw();
+  }
+
+  // ---------- answer key ----------
+  var keyModule = 1;
+  function keyView() {
+    view.innerHTML = '<section class="ch"><h2>🔑 Answer key</h2><p class="lead">Change an answer or its tolerance here. ' +
+      "New submissions are graded with the updated key; earlier submissions keep their recorded scores.</p>" +
+      '<p class="muted">Numeric answers may be typed as decimals or exact values (pi/4, 2ln(3), sqrt(2)/2). ' +
+      "Formula answers use the same syntax as the students, for example <code>x^2*sin(x)</code> or <code>(1/2)e^(2x)</code>; " +
+      "write them without + C. A formula is accepted when it agrees with the key at sample points, and for " +
+      "antiderivatives when it differs from the key only by a constant.</p>" +
+      '<label class="field" style="max-width:520px">Module<select id="km">' + moduleOptions(keyModule) + "</select></label>" +
+      '<div id="key-body"><div class="loading"><div class="spinner"></div>Loading…</div></div></section>';
+    document.getElementById("km").onchange = function () { keyModule = Number(this.value); keyView(); };
+    call("admin_getKey", keyModule).then(drawKey).catch(function (e) { toast(e.message, true); });
+  }
+  function drawKey(k) {
+    var rows = k.items.map(function (it) {
+      var input = it.type === "mc"
+        ? '<select class="ans">' + Array.from({ length: it.choices }, function (_, j) {
+            return '<option value="' + j + '"' + (Number(it.answer) === j ? " selected" : "") + ">" + String.fromCharCode(65 + j) + "</option>";
+          }).join("") + "</select>"
+        : '<input type="text" class="ans" value="' + esc(it.answer) + '">';
+      var tol = it.type === "numeric" ? '<input type="number" min="0" step="0.5" class="tol" value="' + esc(it.tol) + '">' : "—";
+      var kind = it.type === "mc" ? "Multiple choice" : it.type === "expr"
+        ? "Formula in " + esc((it.vars || ["x"]).join(", ")) + (it.constant ? " (+ C required)" : "") : "Numeric";
+      return '<tr data-id="' + esc(it.id) + '"><td>' + esc(it.label) + "</td><td>" + kind +
+        "</td><td>" + input + "</td><td>" + esc(it.unit || "") + "</td><td>" + tol + "</td></tr>";
+    }).join("");
+    var body = document.getElementById("key-body");
+    body.innerHTML = '<div class="key-layout"><div class="questions">' + k.activityHtml + "</div><div>" +
+      '<div class="tw"><table class="data"><thead><tr><th>Item</th><th>Type</th><th>Answer</th><th>Unit</th><th>Tolerance %</th></tr></thead><tbody>' +
+      rows + '</tbody></table></div><div class="btnrow" style="margin-top:12px"><button class="btn" id="save-key">Save answer key</button></div></div></div>';
+    typeset(body);
+    document.getElementById("save-key").onclick = function () {
+      var b = this;
+      var items = [].map.call(body.querySelectorAll("tr[data-id]"), function (tr) {
+        var tol = tr.querySelector(".tol");
+        return { id: tr.dataset.id, answer: tr.querySelector(".ans").value, tol: tol ? tol.value : "" };
+      });
+      busy(b, true);
+      call("admin_saveKey", keyModule, items).then(function (k2) { toast("Answer key saved."); drawKey(k2); })
+        .catch(function (e) { busy(b, false); toast(e.message, true); });
+    };
+  }
+
+  // ---------- results ----------
+  var resModule = 1, resSection = "", resSearch = "";
+  function results() {
+    view.innerHTML = '<section class="ch"><h2>📝 Results</h2><p class="lead">Every submission, sorted by block section and last name. ' +
+      "Set a <b>Final score</b> to override the automatic score (for example after checking solutions). " +
+      "<b>Allow retake</b> deletes that attempt so the student can submit again.</p>" +
+      '<div class="form-grid"><label class="field">Module<select id="rm">' + moduleOptions(resModule) + "</select></label>" +
+      '<label class="field">Block section<select id="rs"><option value="">All</option>' + A.sections.map(function (s) {
+        return '<option' + (s === resSection ? " selected" : "") + ">" + esc(s) + "</option>";
+      }).join("") + "</select></label>" +
+      '<label class="field">Search name or student no.<input type="text" id="rq" value="' + esc(resSearch) + '"></label></div>' +
+      '<div id="res-body"><div class="loading"><div class="spinner"></div>Loading…</div></div></section>';
+    document.getElementById("rm").onchange = function () { resModule = Number(this.value); results(); };
+    document.getElementById("rs").onchange = function () { resSection = this.value; drawResults(last); };
+    document.getElementById("rq").oninput = function () { resSearch = this.value; drawResults(last); };
+    call("admin_results", resModule).then(drawResults).catch(function (e) { toast(e.message, true); });
+  }
+  var last = null;
+  function drawResults(r) {
+    last = r;
+    if (!r) return;
+    var head = r.head;
+    var q = resSearch.toLowerCase();
+    var rows = r.rows.filter(function (x) {
+      return (!resSection || x[7] === resSection) &&
+        (!q || (x[4] + " " + x[5] + " " + x[3] + " " + x[2]).toLowerCase().indexOf(q) >= 0);
+    });
+    var body = document.getElementById("res-body");
+    var html = '<p class="muted">' + rows.length + " of " + r.rows.length + ' submissions · <a target="_blank" rel="noopener" href="' + esc(r.sheetUrl) +
+      '">Open this tab in Google Sheets</a></p><div class="tw"><table class="data"><thead><tr><th>Block section</th><th>Last name</th><th>First name</th>' +
+      "<th>Student no.</th><th>Att.</th><th>Score</th><th>Final score</th><th>Remarks</th><th>Submitted</th><th></th></tr></thead><tbody>";
+    rows.forEach(function (x) {
+      html += '<tr data-id="' + esc(x[0]) + '"><td>' + esc(x[7]) + "</td><td>" + esc(x[4]) + "</td><td>" + esc(x[5]) + "</td><td>" + esc(x[3]) +
+        "</td><td>" + esc(x[8]) + "</td><td>" + esc(x[9]) + "/" + esc(x[10]) + '</td><td><input class="score" type="text" value="' + esc(x[12]) +
+        '"></td><td><input class="remarks" type="text" value="' + esc(x[13]) + '"></td><td>' + esc(x[1]) +
+        '</td><td class="row-actions"><button class="btn small save">Save</button><button class="btn ghost small view">View work</button>' +
+        '<button class="btn danger small del">Allow retake</button></td></tr>';
+    });
+    body.innerHTML = html + "</tbody></table></div>";
+    body.querySelectorAll("tr[data-id]").forEach(function (tr) {
+      var id = tr.dataset.id;
+      var x = r.rows.filter(function (y) { return y[0] === id; })[0];
+      tr.querySelector(".save").onclick = function () {
+        var b = this;
+        busy(b, true, "…");
+        call("admin_saveResult", resModule, id, tr.querySelector(".score").value, tr.querySelector(".remarks").value)
+          .then(function (r2) { toast("Saved."); drawResults(r2); })
+          .catch(function (e) { busy(b, false); toast(e.message, true); });
+      };
+      tr.querySelector(".del").onclick = function () {
+        if (!confirm("Delete attempt " + x[8] + " of " + x[5] + " " + x[4] + "? They will be able to submit again. This cannot be undone.")) return;
+        var b = this;
+        busy(b, true, "…");
+        call("admin_deleteSubmission", resModule, id).then(function (r2) { toast("Attempt deleted."); drawResults(r2); })
+          .catch(function (e) { busy(b, false); toast(e.message, true); });
+      };
+      tr.querySelector(".view").onclick = function () {
+        var next = tr.nextElementSibling;
+        if (next && next.classList.contains("detail")) { next.remove(); return; }
+        var parts = "";
+        for (var i = 14; i < head.length; i++) {
+          var h = head[i], val = x[i] || "";
+          if (/Solution$/.test(h)) parts += '<div class="sol-view">' + esc(val.replace(/\$\$([^$]+)\$\$/g, "\\[$1\\]").replace(/\$([^$]+)\$/g, "\\($1\\)")) + "</div>";
+          else parts += "<p><b>" + esc(h) + ":</b> " + esc(val) + "</p>";
+        }
+        var d = document.createElement("tr");
+        d.className = "detail";
+        d.innerHTML = '<td colspan="10"><p class="muted">' + esc(x[2]) + " · " + esc(x[11]) + "%</p>" + parts + "</td>";
+        tr.parentNode.insertBefore(d, tr.nextSibling);
+        typeset(d);
+      };
+    });
+  }
+
+  // ---------- recordbook ----------
+  var recSection = "";
+  function record() {
+    view.innerHTML = '<section class="ch"><h2>📒 Recordbook</h2><p class="lead">Best score per student per module (your final score if you set one), ' +
+      "sorted by block section, last name and first name. It is also saved in the <b>Recordbook</b> tab of the Google Sheet.</p>" +
+      '<div class="form-grid"><label class="field">Block section<select id="recs"><option value="">All</option>' + A.sections.map(function (s) {
+        return '<option' + (s === recSection ? " selected" : "") + ">" + esc(s) + "</option>";
+      }).join("") + '</select></label></div><div id="rec-body"><div class="loading"><div class="spinner"></div>Building the recordbook…</div></div></section>';
+    var data = null;
+    function draw() {
+      var rows = data.rows.filter(function (r) { return !recSection || r[0] === recSection; });
+      document.getElementById("rec-body").innerHTML = '<p class="muted">' + rows.length + ' students · <a target="_blank" rel="noopener" href="' +
+        esc(data.sheetUrl) + '">Open the Recordbook tab</a></p><div class="tw"><table class="data"><thead><tr>' +
+        data.head.map(function (h) { return "<th>" + esc(h) + "</th>"; }).join("") + "</tr></thead><tbody>" +
+        rows.map(function (r) { return "<tr>" + r.map(function (c) { return "<td>" + esc(c) + "</td>"; }).join("") + "</tr>"; }).join("") +
+        "</tbody></table></div>";
+    }
+    document.getElementById("recs").onchange = function () { recSection = this.value; if (data) draw(); };
+    call("admin_recordbook").then(function (d) { data = d; draw(); }).catch(function (e) { toast(e.message, true); });
+  }
+
+  // ---------- archive ----------
+  function archive() {
+    var s = A.settings;
+    var when = s.endDate ? addDays(s.endDate, Number(s.archiveDelayDays) || 7) : "";
+    var auto = truthy(s.autoArchive)
+      ? (s.endDate ? (s.lastArchivedEnd === s.endDate ? "✅ This semester (ending " + nice(s.endDate) + ") has already been archived."
+          : "🗓️ The records will be archived and cleared automatically on <b>" + nice(when) + "</b> (" + (Number(s.archiveDelayDays) || 7) + " days after the end date).")
+        : "⚠️ Set the semester end date to schedule the automatic archive.")
+      : "⏸️ Automatic archiving is off (turn it on in the Semester tab).";
+    var log = A.archives.length ? '<div class="tw"><table class="data"><thead><tr><th>Archived on</th><th>How</th><th>Semester</th><th>Start</th><th>End</th><th>Copy</th></tr></thead><tbody>' +
+      A.archives.map(function (r) {
+        return "<tr><td>" + esc(r[0]) + "</td><td>" + esc(r[1]) + "</td><td>" + esc(r[2]) + "</td><td>" + esc(r[3]) + "</td><td>" + esc(r[4]) +
+          '</td><td><a target="_blank" rel="noopener" href="' + esc(r[5]) + '">Open</a></td></tr>';
+      }).join("") + "</tbody></table></div>" : '<p class="muted">No archives yet.</p>';
+    view.innerHTML = '<section class="ch"><h2>🗄️ Archive and reset</h2>' +
+      '<p class="lead">Archiving saves a full copy of the Google Sheet in the Drive folder <b>CAL02 Archives</b>, then clears the student records ' +
+      "(submissions, video answers, students and recordbook) so the site is ready for the next semester. " +
+      "Your settings, block sections, modules, videos and answer key are kept.</p>" +
+      '<div class="notice">' + auto + (A.autoArchiveTrigger ? "" : (truthy(s.autoArchive) ? " <b>The daily check is not installed yet: save the Semester settings once to install it.</b>" : "")) + "</div>" +
+      "<h3>Archive now</h3><p>Type <b>ARCHIVE</b> and press the button to archive and clear the records right away.</p>" +
+      '<div class="btnrow"><input type="text" id="confirm" placeholder="ARCHIVE" style="max-width:200px"><button class="btn danger" id="go">Archive and clear now</button></div>' +
+      "<h3>Past archives</h3>" + log + "</section>";
+    document.getElementById("go").onclick = function () {
+      var b = this;
+      var word = document.getElementById("confirm").value;
+      if (word.trim().toUpperCase() !== "ARCHIVE") { toast("Type ARCHIVE to confirm.", true); return; }
+      busy(b, true, "Archiving…");
+      call("admin_archiveNow", word).then(function (d) { A = d; toast("Archived: " + d.archived.name); render(); })
+        .catch(function (e) { busy(b, false); toast(e.message, true); });
+    };
+  }
+
+  call("admin_load").then(function (d) {
+    A = d;
+    setStudentLink(A.studentUrl);
+    document.getElementById("who").textContent = "Signed in as " + (A.email || BOOT.email || "");
+    render();
+  })
+    .catch(function (e) { view.innerHTML = '<section class="ch"><h2>Could not load</h2><p>' + esc(e.message) + "</p></section>"; });
+})();
+</script>
+</body>

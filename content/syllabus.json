@@ -1,0 +1,136 @@
+{
+ "source": "'25-'26 - CAL02 (Course Syllabus)",
+ "courseInfo": [
+  [
+   "Course code",
+   "CAL02"
+  ],
+  [
+   "Course title",
+   "Integral Calculus"
+  ],
+  [
+   "Credit units",
+   "3 units"
+  ],
+  [
+   "Contact hours",
+   "3 hours lecture"
+  ],
+  [
+   "Pre-requisite",
+   "CAL01: Differential Calculus"
+  ],
+  [
+   "Co-requisite",
+   "None"
+  ],
+  [
+   "Semester",
+   "First Semester, AY 2026-2027"
+  ],
+  [
+   "Instructor",
+   "Instr. Ryan M. Vitalez, LPT"
+  ]
+ ],
+ "description": "This course will tackle two important topics that underpin a lot of the mathematical machinery to understand modern mathematics, physics, and astronomy. These two being integration and vectors and their calculus. Understanding the concepts that will be discussed in this course requires knowledge and at least an intermediate mastery of the topics discussed in the CAL01 course, i.e., limits and differentiation. A rigorous treatment will only be for certain topics that require it but will not be implemented in the entirety of the course. Multiple readings of the material in advance are highly expected from the student, if not required.",
+ "requirements": [
+  "Long Examinations",
+  "Written Works",
+  "Recitation Card"
+ ],
+ "grading": [
+  {
+   "component": "Long Examinations",
+   "weight": "40%",
+   "items": [
+    "Long Examination 1",
+    "Long Examination 2",
+    "Long Examination 3"
+   ]
+  },
+  {
+   "component": "Recitation",
+   "weight": "20%",
+   "items": []
+  },
+  {
+   "component": "Written Works",
+   "weight": "30%",
+   "items": [
+    "Quizzes",
+    "Activities",
+    "Problem Sets"
+   ]
+  },
+  {
+   "component": "Attendance",
+   "weight": "10%",
+   "items": []
+  }
+ ],
+ "transmutation": [
+  [
+   "97% to 100%",
+   "1.00"
+  ],
+  [
+   "93% to 96.99%",
+   "1.25"
+  ],
+  [
+   "89% to 92.99%",
+   "1.50"
+  ],
+  [
+   "85% to 88.99%",
+   "1.75"
+  ],
+  [
+   "81% to 84.99%",
+   "2.00"
+  ],
+  [
+   "77% to 80.99%",
+   "2.25"
+  ],
+  [
+   "73% to 76.99%",
+   "2.50"
+  ],
+  [
+   "69% to 72.99%",
+   "2.75"
+  ],
+  [
+   "65% to 68.99%",
+   "3.00"
+  ],
+  [
+   "64% to 64.99%",
+   "4.00"
+  ],
+  [
+   "63.99% and below",
+   "5.00"
+  ]
+ ],
+ "references": [
+  "Stewart, J. (2016). <em>Calculus</em>, 8th ed. Cengage Learning.",
+  "Love, C. E., &amp; Rainville, E. D. (1969). <em>Differential and Integral Calculus</em>, 6th ed. The Macmillan Company."
+ ],
+ "videoCredit": "Lecture videos in the modules: MIT OpenCourseWare, 18.01 Single Variable Calculus, Fall 2006; MIT OpenCourseWare, 18.02 Multivariable Calculus, Fall 2007; MIT OpenCourseWare, 18.03 Differential Equations, Spring 2006. MIT OpenCourseWare videos are licensed CC BY-NC-SA 4.0. Each video is cited on its module page.",
+ "consultation": [
+  {
+   "day": "Wednesday",
+   "time": "9:00 AM to 12:00 PM",
+   "room": "RnD AS611"
+  },
+  {
+   "day": "Friday",
+   "time": "9:00 AM to 11:00 AM",
+   "room": "RnD AS611"
+  }
+ ]
+}

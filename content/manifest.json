@@ -1,0 +1,1824 @@
+{
+ "course": "CAL02",
+ "courseTitle": "Integral Calculus",
+ "instructor": "Instr. Ryan M. Vitalez, LPT",
+ "university": "Rizal Technological University",
+ "department": "Department of Earth and Space Sciences",
+ "program": "Bachelor of Science in Astronomy",
+ "logo": "https://raw.githubusercontent.com/mrvitalez/IntegCal-online-module/main/img/rtu-logo.jpg",
+ "parts": [
+  {
+   "title": "Part I · Introduction to Integrals",
+   "span": "Modules 1-3",
+   "blurb": "Areas and distances, the definite integral, the Fundamental Theorem of Calculus, and substitution.",
+   "modules": [
+    1,
+    2,
+    3
+   ],
+   "problemSet": 1
+  },
+  {
+   "title": "Part II · Applications of Integration",
+   "span": "Modules 4-5",
+   "blurb": "Areas between curves, volumes by slicing and by shells, work, and the average value of a function.",
+   "modules": [
+    4,
+    5
+   ],
+   "problemSet": 2
+  },
+  {
+   "title": "Part III · Techniques of Integration",
+   "span": "Modules 6-9",
+   "blurb": "Integration by parts, trigonometric integrals and substitutions, partial fractions, strategy, improper integrals, and an optional look at the Laplace and Fourier transforms.",
+   "modules": [
+    6,
+    7,
+    8,
+    9
+   ],
+   "problemSet": 3
+  },
+  {
+   "title": "Part IV · Applications of Integration II",
+   "span": "Module 10",
+   "blurb": "Arc length, area of a surface of revolution, and probability.",
+   "modules": [
+    10
+   ],
+   "problemSet": 4
+  },
+  {
+   "title": "Part V · Parametric Equations and Polar Coordinates",
+   "span": "Modules 11-12",
+   "blurb": "Curves defined by parametric equations, polar coordinates, and conic sections in polar form.",
+   "modules": [
+    11,
+    12
+   ],
+   "problemSet": 5
+  },
+  {
+   "title": "Part VI · Infinite Sequences and Series",
+   "span": "Modules 13-14",
+   "blurb": "Convergence tests, power series, and Taylor and Maclaurin series with their applications.",
+   "modules": [
+    13,
+    14
+   ],
+   "problemSet": 6
+  },
+  {
+   "title": "Part VII · Optional: Vector Calculus",
+   "span": "Module 15",
+   "blurb": "Vectors, dot and cross products, and the calculus of vector functions.",
+   "modules": [
+    15
+   ],
+   "problemSet": null
+  }
+ ],
+ "problemSets": [
+  {
+   "n": 1,
+   "title": "Problem Set 1: Introduction to Integrals",
+   "modules": [
+    1,
+    2,
+    3
+   ]
+  },
+  {
+   "n": 2,
+   "title": "Problem Set 2: Applications of Integration",
+   "modules": [
+    4,
+    5
+   ]
+  },
+  {
+   "n": 3,
+   "title": "Problem Set 3: Techniques of Integration",
+   "modules": [
+    6,
+    7,
+    8,
+    9
+   ]
+  },
+  {
+   "n": 4,
+   "title": "Problem Set 4: Applications of Integration II",
+   "modules": [
+    10
+   ]
+  },
+  {
+   "n": 5,
+   "title": "Problem Set 5: Parametric Equations and Polar Coordinates",
+   "modules": [
+    11,
+    12
+   ]
+  },
+  {
+   "n": 6,
+   "title": "Problem Set 6: Infinite Sequences and Series",
+   "modules": [
+    13,
+    14
+   ]
+  }
+ ],
+ "modules": [
+  {
+   "n": 1,
+   "title": "Areas, Distances and the Definite Integral",
+   "tab": "M01 Definite Integral",
+   "icon": "📐",
+   "optional": false,
+   "overview": "How do you measure the area of a region with a curved edge, or the distance travelled when speed keeps changing? You will approximate with rectangles, take a limit, and arrive at the definite integral, the central idea of this course.",
+   "topics": [
+    "Areas and Distances",
+    "The Definite Integral"
+   ],
+   "sections": [
+    [
+     "4.1",
+     "Areas and Distances"
+    ],
+    [
+     "4.2",
+     "The Definite Integral"
+    ]
+   ],
+   "items": [
+    {
+     "id": "q1",
+     "type": "numeric",
+     "unit": "square units",
+     "choices": 0
+    },
+    {
+     "id": "q2",
+     "type": "numeric",
+     "unit": "m",
+     "choices": 0
+    },
+    {
+     "id": "q3",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q4",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "n"
+     ],
+     "domain": {
+      "n": [
+       1,
+       30
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q5",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "n"
+     ],
+     "domain": {
+      "n": [
+       1,
+       30
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q6",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "b"
+     ],
+     "domain": {
+      "b": [
+       0.5,
+       5
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q7",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "q8",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "reflection",
+     "type": "text",
+     "unit": "",
+     "choices": 0
+    }
+   ],
+   "activityTitle": "Activity 1: Rectangles to the Rescue"
+  },
+  {
+   "n": 2,
+   "title": "The Fundamental Theorem of Calculus",
+   "tab": "M02 Fundamental Theorem",
+   "icon": "🔗",
+   "optional": false,
+   "overview": "The Fundamental Theorem of Calculus connects derivatives and integrals, turning the long limit computations of Module 1 into one-line evaluations. You will also build a table of indefinite integrals and use integrals of rates to find net change, displacement and distance.",
+   "topics": [
+    "The Fundamental Theorem of Calculus",
+    "Indefinite Integrals and the Net Change Theorem"
+   ],
+   "sections": [
+    [
+     "4.3",
+     "The Fundamental Theorem of Calculus"
+    ],
+    [
+     "4.4",
+     "Indefinite Integrals and the Net Change Theorem"
+    ]
+   ],
+   "items": [
+    {
+     "id": "q1",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "x"
+     ],
+     "domain": {
+      "x": [
+       -2,
+       2
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q2",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "x"
+     ],
+     "domain": {
+      "x": [
+       0.2,
+       2
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q3",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "x"
+     ],
+     "domain": {
+      "x": [
+       0.2,
+       1.4
+      ]
+     },
+     "constant": true
+    },
+    {
+     "id": "q4",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q5",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q6",
+     "type": "numeric",
+     "unit": "m",
+     "choices": 0
+    },
+    {
+     "id": "q7",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "q8",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "reflection",
+     "type": "text",
+     "unit": "",
+     "choices": 0
+    }
+   ],
+   "activityTitle": "Activity 2: The Great Connection"
+  },
+  {
+   "n": 3,
+   "title": "The Substitution Rule",
+   "tab": "M03 Substitution Rule",
+   "icon": "🔄",
+   "optional": false,
+   "overview": "The Substitution Rule reverses the Chain Rule and lets you integrate many functions that are not in the basic table. You will use it for indefinite and definite integrals, learn to change the limits of integration, and use symmetry to evaluate integrals over intervals centred at zero.",
+   "topics": [
+    "The Substitution Rule"
+   ],
+   "sections": [
+    [
+     "4.5",
+     "The Substitution Rule: Indefinite Integrals"
+    ],
+    [
+     "4.5",
+     "Substitution in Definite Integrals and Symmetry"
+    ]
+   ],
+   "items": [
+    {
+     "id": "q1",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "x"
+     ],
+     "domain": {
+      "x": [
+       -1,
+       1
+      ]
+     },
+     "constant": true
+    },
+    {
+     "id": "q2",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "x"
+     ],
+     "domain": {
+      "x": [
+       -2,
+       2
+      ]
+     },
+     "constant": true
+    },
+    {
+     "id": "q3",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q4",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q5",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "x"
+     ],
+     "domain": {
+      "x": [
+       -1.5,
+       3
+      ]
+     },
+     "constant": true
+    },
+    {
+     "id": "q6",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q7",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "q8",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "reflection",
+     "type": "text",
+     "unit": "",
+     "choices": 0
+    }
+   ],
+   "activityTitle": "Activity 3: Undoing the Chain Rule"
+  },
+  {
+   "n": 4,
+   "title": "Areas Between Curves and Volumes",
+   "tab": "M04 Areas & Volumes",
+   "icon": "🥏",
+   "optional": false,
+   "overview": "Use definite integrals to measure the area of a region trapped between two curves, slicing vertically or horizontally. Then slice solids into thin disks and washers to find volumes, including solids made by rotating a region about a line.",
+   "topics": [
+    "Areas between the curves",
+    "Volumes"
+   ],
+   "sections": [
+    [
+     "5.1",
+     "Areas Between Curves"
+    ],
+    [
+     "5.2",
+     "Volumes"
+    ]
+   ],
+   "items": [
+    {
+     "id": "q1",
+     "type": "numeric",
+     "unit": "square units",
+     "choices": 0
+    },
+    {
+     "id": "q2",
+     "type": "numeric",
+     "unit": "square units",
+     "choices": 0
+    },
+    {
+     "id": "q3",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "a"
+     ],
+     "domain": {
+      "a": [
+       0.5,
+       3
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q4",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "q5",
+     "type": "numeric",
+     "unit": "cubic units",
+     "choices": 0
+    },
+    {
+     "id": "q6",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "r",
+      "h"
+     ],
+     "domain": {
+      "r": [
+       0.5,
+       3
+      ],
+      "h": [
+       0.5,
+       3
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q7",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "x"
+     ],
+     "domain": {
+      "x": [
+       -1.8,
+       1.8
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q8",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "reflection",
+     "type": "text",
+     "unit": "",
+     "choices": 0
+    }
+   ],
+   "activityTitle": "Activity 4: Slice It, Stack It"
+  },
+  {
+   "n": 5,
+   "title": "Cylindrical Shells, Work and Average Value",
+   "tab": "M05 Shells, Work, Average",
+   "icon": "🏗️",
+   "optional": false,
+   "overview": "Learn a second way to compute volumes of revolution using cylindrical shells. Then apply integrals to physics, computing the work done by variable forces, springs, cables and pumps, and finish with the average value of a function and the Mean Value Theorem for Integrals.",
+   "topics": [
+    "Volumes by Cylindrical Shells",
+    "Work",
+    "Average Value of a Function"
+   ],
+   "sections": [
+    [
+     "5.3",
+     "Volumes by Cylindrical Shells"
+    ],
+    [
+     "5.4",
+     "Work"
+    ],
+    [
+     "5.5",
+     "Average Value of a Function"
+    ]
+   ],
+   "items": [
+    {
+     "id": "q1",
+     "type": "numeric",
+     "unit": "cubic units",
+     "choices": 0
+    },
+    {
+     "id": "q2",
+     "type": "numeric",
+     "unit": "J",
+     "choices": 0
+    },
+    {
+     "id": "q3",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q4",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "b"
+     ],
+     "domain": {
+      "b": [
+       0.5,
+       4
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q5",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "L"
+     ],
+     "domain": {
+      "L": [
+       1,
+       30
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q6",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "b"
+     ],
+     "domain": {
+      "b": [
+       0.3,
+       3
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q7",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "q8",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "reflection",
+     "type": "text",
+     "unit": "",
+     "choices": 0
+    }
+   ],
+   "activityTitle": "Activity 5: Shells, Springs and Averages"
+  },
+  {
+   "n": 6,
+   "title": "Integration by Parts and Trigonometric Integrals",
+   "tab": "M06 Parts & Trig Integrals",
+   "icon": "🧩",
+   "optional": false,
+   "overview": "Integration by parts turns the Product Rule into a tool for integrating products such as x e^x, x² ln x and e^x sin x. You will also learn the identity-and-substitute strategies for powers of sine, cosine, tangent and secant.",
+   "topics": [
+    "Integration by parts",
+    "Trigonometric Integrals"
+   ],
+   "sections": [
+    [
+     "7.1",
+     "Integration by Parts"
+    ],
+    [
+     "7.2",
+     "Trigonometric Integrals"
+    ]
+   ],
+   "items": [
+    {
+     "id": "q1",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q2",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "x"
+     ],
+     "domain": {
+      "x": [
+       -2,
+       2
+      ]
+     },
+     "constant": true
+    },
+    {
+     "id": "q3",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "q4",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "x"
+     ],
+     "domain": {
+      "x": [
+       -1,
+       3
+      ]
+     },
+     "constant": true
+    },
+    {
+     "id": "q5",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q6",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "x"
+     ],
+     "domain": {
+      "x": [
+       -3,
+       3
+      ]
+     },
+     "constant": true
+    },
+    {
+     "id": "q7",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q8",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "reflection",
+     "type": "text",
+     "unit": "",
+     "choices": 0
+    }
+   ],
+   "activityTitle": "Activity 6: Take It Apart"
+  },
+  {
+   "n": 7,
+   "title": "Trigonometric Substitution and Partial Fractions",
+   "tab": "M07 Trig Sub & Part. Fractions",
+   "icon": "🔺",
+   "optional": false,
+   "overview": "Square roots such as √(9 − x²) disappear when you substitute x = 3 sin θ, and a reference triangle brings you back to x. Rational functions are split into partial fractions, each of which integrates to a logarithm, a power or an inverse tangent.",
+   "topics": [
+    "Trigonometric Substitution",
+    "Integration of Rational Function by Partial Fractions"
+   ],
+   "sections": [
+    [
+     "7.3",
+     "Trigonometric Substitution"
+    ],
+    [
+     "7.4",
+     "Integration of Rational Functions by Partial Fractions"
+    ]
+   ],
+   "items": [
+    {
+     "id": "q1",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "q2",
+     "type": "numeric",
+     "unit": "square units",
+     "choices": 0
+    },
+    {
+     "id": "q3",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "x"
+     ],
+     "domain": {
+      "x": [
+       -3,
+       3
+      ]
+     },
+     "constant": true
+    },
+    {
+     "id": "q4",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q5",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "x"
+     ],
+     "domain": {
+      "x": [
+       2.5,
+       6
+      ]
+     },
+     "constant": true
+    },
+    {
+     "id": "q6",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q7",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "x"
+     ],
+     "domain": {
+      "x": [
+       0,
+       4
+      ]
+     },
+     "constant": true
+    },
+    {
+     "id": "q8",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "reflection",
+     "type": "text",
+     "unit": "",
+     "choices": 0
+    }
+   ],
+   "activityTitle": "Activity 7: Triangles and Fractions"
+  },
+  {
+   "n": 8,
+   "title": "Strategy for Integration and Improper Integrals",
+   "tab": "M08 Strategy & Improper Ints",
+   "icon": "♾️",
+   "optional": false,
+   "overview": "You will learn a checklist for choosing an integration method when no one tells you which section a problem comes from. Then you will extend the definite integral to infinite intervals and to functions that blow up, and decide whether such improper integrals converge or diverge.",
+   "topics": [
+    "Strategy for Integration",
+    "Improper Integrals"
+   ],
+   "sections": [
+    [
+     "7.5",
+     "Strategy for Integration"
+    ],
+    [
+     "7.8",
+     "Improper Integrals"
+    ]
+   ],
+   "items": [
+    {
+     "id": "q1",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "q2",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "x"
+     ],
+     "domain": {
+      "x": [
+       0.2,
+       9
+      ]
+     },
+     "constant": true
+    },
+    {
+     "id": "q3",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q4",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "p"
+     ],
+     "domain": {
+      "p": [
+       1.2,
+       5
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q5",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q6",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q7",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "q8",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "reflection",
+     "type": "text",
+     "unit": "",
+     "choices": 0
+    }
+   ],
+   "activityTitle": "Activity 8: To Infinity and Back"
+  },
+  {
+   "n": 9,
+   "title": "Special Topics: Laplace and Fourier Transforms",
+   "tab": "M09 Laplace & Fourier",
+   "icon": "🌊",
+   "optional": true,
+   "overview": "Optional special topic: two improper integrals that engineers and physicists use every day. The Laplace transform turns differential equations into algebra, and the Fourier transform breaks a signal into its frequencies. Both are built directly on the improper integrals of Stewart §7.8.",
+   "topics": [
+    "Laplace Transform",
+    "Fourier Transform"
+   ],
+   "sections": [
+    [
+     "",
+     "The Laplace Transform"
+    ],
+    [
+     "",
+     "The Fourier Transform"
+    ]
+   ],
+   "items": [
+    {
+     "id": "q1",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "s"
+     ],
+     "domain": {
+      "s": [
+       3,
+       6
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q2",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "s"
+     ],
+     "domain": {
+      "s": [
+       3,
+       6
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q3",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q4",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "q5",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q6",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "omega"
+     ],
+     "domain": {
+      "omega": [
+       0.3,
+       4
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q7",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q8",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "reflection",
+     "type": "text",
+     "unit": "",
+     "choices": 0
+    }
+   ],
+   "activityTitle": "Activity 9: Transform It"
+  },
+  {
+   "n": 10,
+   "title": "Arc Length, Surface Area and Probability",
+   "tab": "M10 Arc Length & Probability",
+   "icon": "📏",
+   "optional": false,
+   "overview": "Measure the length of a curve and the area of a surface of revolution by adding up tiny straight pieces. Then use integrals to compute probabilities, means and medians for continuous random variables, including the exponential and normal distributions.",
+   "topics": [
+    "Arc Length",
+    "Area of a Surface of Revolution",
+    "Probability"
+   ],
+   "sections": [
+    [
+     "8.1",
+     "Arc Length"
+    ],
+    [
+     "8.2",
+     "Area of a Surface of Revolution"
+    ],
+    [
+     "8.5",
+     "Probability"
+    ]
+   ],
+   "items": [
+    {
+     "id": "q1",
+     "type": "numeric",
+     "unit": "units",
+     "choices": 0
+    },
+    {
+     "id": "q2",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "x"
+     ],
+     "domain": {
+      "x": [
+       0.1,
+       4
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q3",
+     "type": "numeric",
+     "unit": "square units",
+     "choices": 0
+    },
+    {
+     "id": "q4",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "q5",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "r",
+      "h"
+     ],
+     "domain": {
+      "r": [
+       2,
+       3
+      ],
+      "h": [
+       0.2,
+       1.5
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q6",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q7",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "t"
+     ],
+     "domain": {
+      "t": [
+       0.5,
+       20
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q8",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "reflection",
+     "type": "text",
+     "unit": "",
+     "choices": 0
+    }
+   ],
+   "activityTitle": "Activity 10: Measuring Curves and Chances"
+  },
+  {
+   "n": 11,
+   "title": "Parametric Curves and Their Calculus",
+   "tab": "M11 Parametric Curves",
+   "icon": "🌀",
+   "optional": false,
+   "overview": "Curves that are not graphs of functions can be described by giving x and y as functions of a parameter t. You will learn to sketch and identify parametric curves, then find slopes, concavity, areas, arc lengths and surface areas directly from the parametric equations.",
+   "topics": [
+    "Curves defined by Parametric Equations",
+    "Calculus with Parametric Curves"
+   ],
+   "sections": [
+    [
+     "10.1",
+     "Curves Defined by Parametric Equations"
+    ],
+    [
+     "10.2",
+     "Calculus with Parametric Curves"
+    ]
+   ],
+   "items": [
+    {
+     "id": "q1",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "t"
+     ],
+     "domain": {
+      "t": [
+       -2,
+       2
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q2",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "q3",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "x"
+     ],
+     "domain": {
+      "x": [
+       -3,
+       8
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q4",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "t"
+     ],
+     "domain": {
+      "t": [
+       0.5,
+       3
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q5",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "q6",
+     "type": "numeric",
+     "unit": "square units",
+     "choices": 0
+    },
+    {
+     "id": "q7",
+     "type": "numeric",
+     "unit": "units",
+     "choices": 0
+    },
+    {
+     "id": "q8",
+     "type": "numeric",
+     "unit": "square units",
+     "choices": 0
+    },
+    {
+     "id": "reflection",
+     "type": "text",
+     "unit": "",
+     "choices": 0
+    }
+   ],
+   "activityTitle": "Activity 11: Follow the Moving Point"
+  },
+  {
+   "n": 12,
+   "title": "Polar Coordinates and Conic Sections",
+   "tab": "M12 Polar and Conics",
+   "icon": "🎯",
+   "optional": false,
+   "overview": "Polar coordinates describe a point by its distance and direction from a fixed pole, which makes circles, spirals, roses and cardioids easy to write down. You will convert between coordinate systems, find tangents, areas and arc lengths of polar curves, and describe every conic section with a single polar equation.",
+   "topics": [
+    "Polar Coordinates",
+    "Areas and Lengths in Polar Coordinates",
+    "Conic Sections and their representation in Polar Coordinates"
+   ],
+   "sections": [
+    [
+     "10.3",
+     "Polar Coordinates"
+    ],
+    [
+     "10.4",
+     "Areas and Lengths in Polar Coordinates"
+    ],
+    [
+     "10.6",
+     "Conic Sections in Polar Coordinates"
+    ]
+   ],
+   "items": [
+    {
+     "id": "q1",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "q2",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "theta"
+     ],
+     "domain": {
+      "theta": [
+       -1.2,
+       1.2
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q3",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "theta"
+     ],
+     "domain": {
+      "theta": [
+       -0.6,
+       0.6
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q4",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q5",
+     "type": "numeric",
+     "unit": "square units",
+     "choices": 0
+    },
+    {
+     "id": "q6",
+     "type": "numeric",
+     "unit": "square units",
+     "choices": 0
+    },
+    {
+     "id": "q7",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "theta"
+     ],
+     "domain": {
+      "theta": [
+       0,
+       6.2
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q8",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "reflection",
+     "type": "text",
+     "unit": "",
+     "choices": 0
+    }
+   ],
+   "activityTitle": "Activity 12: Around the Pole"
+  },
+  {
+   "n": 13,
+   "title": "Sequences and Series: First Convergence Tests",
+   "tab": "M13 Sequences & Series",
+   "icon": "🔢",
+   "optional": false,
+   "overview": "What does it mean to add infinitely many numbers? You will learn to find limits of sequences, sum geometric and telescoping series, and decide convergence with the Test for Divergence, the Integral Test, the Comparison Tests and the Alternating Series Test, including how accurate a partial sum is.",
+   "topics": [
+    "Sequences",
+    "Series",
+    "The Integral Test and Estimate of Sums",
+    "The Comparison Test",
+    "Alternating Series"
+   ],
+   "sections": [
+    [
+     "11.1",
+     "Sequences"
+    ],
+    [
+     "11.2",
+     "Series"
+    ],
+    [
+     "11.3",
+     "The Integral Test and Estimates of Sums"
+    ],
+    [
+     "11.4",
+     "The Comparison Tests"
+    ],
+    [
+     "11.5",
+     "Alternating Series"
+    ]
+   ],
+   "items": [
+    {
+     "id": "q1",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "n"
+     ],
+     "domain": {
+      "n": [
+       1,
+       6
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q2",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q3",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "n"
+     ],
+     "domain": {
+      "n": [
+       1,
+       6
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q4",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "n"
+     ],
+     "domain": {
+      "n": [
+       1,
+       6
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q5",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q6",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "q7",
+     "type": "numeric",
+     "unit": "terms",
+     "choices": 0
+    },
+    {
+     "id": "q8",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "reflection",
+     "type": "text",
+     "unit": "",
+     "choices": 0
+    }
+   ],
+   "activityTitle": "Activity 13: Adding Up Forever"
+  },
+  {
+   "n": 14,
+   "title": "Ratio and Root Tests, Power Series and Taylor Series",
+   "tab": "M14 Power & Taylor Series",
+   "icon": "📈",
+   "optional": false,
+   "overview": "You will finish the convergence toolkit with absolute convergence and the Ratio and Root Tests, learn a strategy for choosing a test, and then move to power series: their intervals of convergence, how to build them from known functions, Taylor and Maclaurin series, and how Taylor polynomials approximate functions in mathematics and physics.",
+   "topics": [
+    "Absolute Convergence and the Ratio and Root Tests",
+    "Strategy for Testing Series",
+    "Power Series",
+    "Representation of Function as Power Series",
+    "Taylor and Maclaurin Series",
+    "Application of Taylor Polynomial"
+   ],
+   "sections": [
+    [
+     "11.6",
+     "Absolute Convergence and the Ratio and Root Tests"
+    ],
+    [
+     "11.7",
+     "Strategy for Testing Series"
+    ],
+    [
+     "11.8",
+     "Power Series"
+    ],
+    [
+     "11.9",
+     "Representations of Functions as Power Series"
+    ],
+    [
+     "11.10",
+     "Taylor and Maclaurin Series"
+    ],
+    [
+     "11.11",
+     "Applications of Taylor Polynomials"
+    ]
+   ],
+   "items": [
+    {
+     "id": "q1",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q2",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "q3",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q4",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "q5",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "x"
+     ],
+     "domain": {
+      "x": [
+       -1.2,
+       1.2
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q6",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "n"
+     ],
+     "domain": {
+      "n": [
+       0,
+       6
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q7",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "x"
+     ],
+     "domain": {
+      "x": [
+       -0.8,
+       1.5
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q8",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "reflection",
+     "type": "text",
+     "unit": "",
+     "choices": 0
+    }
+   ],
+   "activityTitle": "Activity 14: Series With a Variable"
+  },
+  {
+   "n": 15,
+   "title": "Vectors and Vector Functions",
+   "tab": "M15 Vector Calculus",
+   "icon": "🧭",
+   "optional": true,
+   "overview": "Optional special topic: vectors and their calculus, from Stewart Chapters 12 and 13. You will add and scale vectors, measure angles and areas with the dot and cross products, and differentiate and integrate vector functions that describe curves and motion.",
+   "topics": [
+    "Vectors",
+    "Dot and Cross Products",
+    "Vector Functions",
+    "Derivatives and Integrals of Vector Functions"
+   ],
+   "sections": [
+    [
+     "12.2",
+     "Vectors"
+    ],
+    [
+     "12.3",
+     "The Dot Product"
+    ],
+    [
+     "12.4",
+     "The Cross Product"
+    ],
+    [
+     "13.1",
+     "Vector Functions and Space Curves"
+    ],
+    [
+     "13.2",
+     "Derivatives and Integrals of Vector Functions"
+    ]
+   ],
+   "items": [
+    {
+     "id": "q1",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q2",
+     "type": "numeric",
+     "unit": "",
+     "choices": 0
+    },
+    {
+     "id": "q3",
+     "type": "numeric",
+     "unit": "degrees",
+     "choices": 0
+    },
+    {
+     "id": "q4",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "q5",
+     "type": "numeric",
+     "unit": "square units",
+     "choices": 0
+    },
+    {
+     "id": "q6",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "t"
+     ],
+     "domain": {
+      "t": [
+       -2,
+       2
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q7",
+     "type": "expr",
+     "unit": "",
+     "choices": 0,
+     "vars": [
+      "t"
+     ],
+     "domain": {
+      "t": [
+       -2,
+       2
+      ]
+     },
+     "constant": false
+    },
+    {
+     "id": "q8",
+     "type": "mc",
+     "unit": "",
+     "choices": 4
+    },
+    {
+     "id": "reflection",
+     "type": "text",
+     "unit": "",
+     "choices": 0
+    }
+   ],
+   "activityTitle": "Activity 15: Arrows in Motion"
+  }
+ ]
+}

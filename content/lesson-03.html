@@ -1,0 +1,67 @@
+<section class="ch accent" id="objectives">
+<h2><span class="num">🔄</span>What you will learn</h2>
+<p class="lead">By the end of this module, you can:</p>
+<ul class="checks"><li>Explain the Substitution Rule as the Chain Rule in reverse.</li><li>Choose a suitable substitution u = g(x) and rewrite an integral entirely in terms of u.</li><li>Handle constant factors and leftover factors of x when substituting.</li><li>Evaluate definite integrals by substitution, changing the limits of integration correctly.</li><li>Use the symmetry of even and odd functions to simplify integrals over [−a, a].</li></ul>
+<div class="callout"><span class="label">How to use this module</span>
+(1) Read each section with pen and paper. (2) Try every worked example before opening its solution. (3) Watch the lecture video and answer its questions. (4) Answer the activity, write your solutions, and submit. Your score is recorded for your instructor. For the full treatment, read §4.5, §4.5 of Stewart, <em>Calculus</em>, 8th edition.</div>
+</section>
+<section class="ch" id="s1"><h2><span class="num">4.5</span>The Substitution Rule: Indefinite Integrals</h2><p>The table in Module 2 handles sums of powers and basic trig functions, but not something like \(\int 2x\sqrt{x^2 + 3}\,dx\). Stewart §4.5 introduces the most important integration technique of all, the <strong>Substitution Rule</strong>. It is simply the Chain Rule run backwards.</p>
+<p><strong>Where it comes from.</strong> The Chain Rule says \(\frac{d}{dx}F(g(x)) = F'(g(x))\,g'(x)\). Reading this as an antiderivative statement, with \(F' = f\):
+\[\int f(g(x))\,g'(x)\,dx = F(g(x)) + C.\]
+If you name the inner function \(u = g(x)\), then \(du = g'(x)\,dx\) (the differential from your derivatives course), and the left side becomes \(\int f(u)\,du = F(u) + C\).</p>
+<div class="callout blue"><span class="label">The Substitution Rule</span> If \(u = g(x)\) is differentiable and \(f\) is continuous on the range of \(g\), then
+\[\int f(g(x))\,g'(x)\,dx = \int f(u)\,du.\]</div>
+<p><strong>The procedure.</strong></p>
+<ol>
+<li>Pick \(u\): usually an <em>inner</em> function (inside a power, root or trig function) whose derivative appears, up to a constant factor, elsewhere in the integrand.</li>
+<li>Compute \(du = g'(x)\,dx\) and solve for whatever piece of the integrand you need, for example \(x\,dx = \tfrac12\,du\).</li>
+<li>Rewrite the <em>entire</em> integral in terms of \(u\) and \(du\). No \(x\) may be left over.</li>
+<li>Integrate in \(u\), then substitute back \(u = g(x)\).</li>
+</ol>
+<p><em>Example.</em> For \(\int 2x\sqrt{x^2 + 3}\,dx\), let \(u = x^2 + 3\), so \(du = 2x\,dx\). The integral becomes \(\int u^{1/2}\,du = \tfrac23 u^{3/2} + C = \tfrac23 (x^2 + 3)^{3/2} + C\).</p>
+<p><strong>Fixing constant factors.</strong> The derivative of \(u\) only has to appear <em>up to a constant</em>. For \(\int \sqrt{2x + 1}\,dx\), take \(u = 2x + 1\); then \(du = 2\,dx\), so \(dx = \tfrac12\,du\) and
+\[\int \sqrt{2x+1}\,dx = \tfrac12\int u^{1/2}\,du = \tfrac13(2x+1)^{3/2} + C.\]
+The same idea gives a rule worth memorising: \(\int \cos(kx)\,dx = \tfrac1k \sin(kx) + C\), and likewise for \(\sin(kx)\) and \(\sec^2(kx)\).</p>
+<p><strong>When an extra \(x\) is left over.</strong> Sometimes, after choosing \(u\), some \(x\) remains. Solve the substitution for \(x\) and replace it. In \(\int x\sqrt{x - 1}\,dx\), the choice \(u = x - 1\) gives \(du = dx\) and \(x = u + 1\), so the integral becomes \(\int (u + 1)u^{1/2}\,du\), which you can expand and integrate (see Example 2).</p>
+<p>Choosing \(u\) is a skill you build by practice. If your first choice does not remove every \(x\), try another; there may be more than one choice that works.</p>
+<div class="callout warn"><span class="label">Common mistake</span> Writing \(\int \cos(x^2)\,dx = \frac{\sin(x^2)}{2x} + C\). You cannot divide by a non-constant to "fix" a missing factor: differentiate the answer and you will see it is wrong. Substitution works only when the needed factor \(g'(x)\) is really there, up to a <em>constant</em>.</div><div class="callout blue"><span class="label">Key equations</span><div class="eq">\[ \int f(g(x))\,g'(x)\,dx = \int f(u)\,du, \qquad u = g(x),\ du = g'(x)\,dx \]</div><div class="eq">\[ \int \cos(kx)\,dx = \frac{1}{k}\sin(kx) + C \]</div></div><figure><img src="https://raw.githubusercontent.com/mrvitalez/IntegCal-online-module/main/img/fig-03-1.png" alt="Two curves from x = 0 to 2.6. The solid curve 2x cos(x squared) oscillates with growing amplitude; the dashed curve sin(x squared) oscillates between minus 1 and 1, peaking where the solid curve crosses the axis." loading="lazy"><figcaption>Figure 3.1 The integrand f(x) = 2x cos(x²) and the antiderivative F(x) = sin(x²) found by substituting u = x². F rises where f &gt; 0, falls where f &lt; 0, and has its peaks where f crosses zero.</figcaption></figure></section><section class="ch" id="s2"><h2><span class="num">4.5</span>Substitution in Definite Integrals and Symmetry</h2><p>For a definite integral that needs substitution you have two options. You can find the indefinite integral first (back in terms of \(x\)) and then use FTC2 with the original limits. Or, often faster, you can <strong>change the limits</strong> along with the variable.</p>
+<div class="callout blue"><span class="label">Substitution Rule for Definite Integrals</span> If \(g'\) is continuous on \([a,b]\) and \(f\) is continuous on the range of \(u = g(x)\), then
+\[\int_a^b f(g(x))\,g'(x)\,dx = \int_{g(a)}^{g(b)} f(u)\,du.\]</div>
+<p>The new limits are the values of \(u\) at the old limits. Once you have switched to \(u\), you never go back to \(x\).</p>
+<p><em>Example.</em> Evaluate \(\int_0^{\sqrt{\pi/2}} 2x\cos(x^2)\,dx\). With \(u = x^2\), \(du = 2x\,dx\); when \(x = 0\), \(u = 0\), and when \(x = \sqrt{\pi/2}\), \(u = \pi/2\). So the integral equals \(\int_0^{\pi/2}\cos u\,du = \big[\sin u\big]_0^{\pi/2} = 1\). Geometrically, the substitution reshapes the region in Figure 3.2 into the region under \(\cos u\) on \([0, \pi/2]\) without changing its area.</p>
+<p><em>Another.</em> \(\int_0^1 \frac{x^2}{(x^3 + 1)^2}\,dx\): let \(u = x^3 + 1\), \(du = 3x^2\,dx\), limits \(1\) to \(2\). Then \(\tfrac13\int_1^2 u^{-2}\,du = \tfrac13\big[-u^{-1}\big]_1^2 = \tfrac13\left(-\tfrac12 + 1\right) = \tfrac16\).</p>
+<div class="callout warn"><span class="label">Common mistake</span> Changing the variable but keeping the old limits, e.g. writing \(\int_0^1 \ldots\,du\) when \(u\) actually runs from 1 to 2. Either change the limits, or substitute back to \(x\) before evaluating. Never mix the two.</div>
+<p><strong>Symmetry.</strong> Substitution also proves two facts that save a lot of work. Suppose \(f\) is continuous on \([-a, a]\).</p>
+<ul>
+<li>If \(f\) is <strong>even</strong> (\(f(-x) = f(x)\), graph symmetric about the \(y\)-axis), then \(\int_{-a}^{a} f(x)\,dx = 2\int_0^{a} f(x)\,dx\).</li>
+<li>If \(f\) is <strong>odd</strong> (\(f(-x) = -f(x)\), graph symmetric about the origin), then \(\int_{-a}^{a} f(x)\,dx = 0\).</li>
+</ul>
+<p>Why? Split \(\int_{-a}^{a} = \int_{-a}^{0} + \int_0^{a}\) and put \(u = -x\) in the first piece: \(\int_{-a}^{0} f(x)\,dx = \int_0^{a} f(-u)\,du\). For an even \(f\) this equals \(\int_0^a f(u)\,du\); for an odd \(f\) it equals \(-\int_0^a f(u)\,du\), cancelling the second piece. In pictures (Figure 3.3), the area of an odd function to the left of the axis is the negative of the area to the right.</p>
+<p><em>Example.</em> \(\int_{-2}^{2}\big(x^4 + x^5\sqrt{1 + x^2}\big)\,dx\). The term \(x^5\sqrt{1+x^2}\) is odd (odd × even), so it contributes 0, and \(x^4\) is even: the integral is \(2\int_0^2 x^4\,dx = 2\cdot\tfrac{32}{5} = \tfrac{64}{5}\). No antiderivative of the messy term was needed.</p>
+<p>Recall the products: odd × odd = even, even × even = even, odd × even = odd. So \(x^3\cos x\) is odd and \(x\sin x\) is even. Symmetry only works on an interval centred at 0.</p><div class="callout blue"><span class="label">Key equations</span><div class="eq">\[ \int_a^b f(g(x))\,g'(x)\,dx = \int_{g(a)}^{g(b)} f(u)\,du \]</div><div class="eq">\[ f \text{ even: } \int_{-a}^{a} f(x)\,dx = 2\int_0^{a} f(x)\,dx \]</div><div class="eq">\[ f \text{ odd: } \int_{-a}^{a} f(x)\,dx = 0 \]</div></div><figure><img src="https://raw.githubusercontent.com/mrvitalez/IntegCal-online-module/main/img/fig-03-2.png" alt="A curve rising from the origin to a maximum and then falling back to zero at x about 1.25. The region under it is shaded." loading="lazy"><figcaption>Figure 3.2 The region under y = 2x cos(x²) from 0 to √(π/2). Substituting u = x² turns it into the region under cos u from 0 to π/2; both have area 1.</figcaption></figure><figure><img src="https://raw.githubusercontent.com/mrvitalez/IntegCal-online-module/main/img/fig-03-3.png" alt="A cubic curve symmetric about the origin. The shaded regions between the curve and the x-axis on the left are mirror images, upside down, of those on the right." loading="lazy"><figcaption>Figure 3.3 An odd function, y = x³ − 2x on [−1.6, 1.6]. Each shaded piece on one side of the y-axis is matched by a piece of opposite sign on the other side, so the integral over the symmetric interval is 0.</figcaption></figure></section>
+<section class="ch accent" id="takeaways">
+<h2><span class="num">★</span>Key takeaways</h2>
+<ul class="checks"><li>Substitution reverses the Chain Rule: ∫ f(g(x)) g′(x) dx = ∫ f(u) du with u = g(x) and du = g′(x) dx.</li><li>Choose u as an inner function whose derivative appears in the integrand, up to a constant factor.</li><li>After substituting, every x (including dx) must be replaced; solve u = g(x) for x if an extra x is left over.</li><li>In a definite integral, change the limits to u-values and never return to x, or else substitute back before evaluating.</li><li>Over [−a, a], an odd function integrates to 0 and an even function gives twice the integral over [0, a].</li></ul>
+</section>
+
+<section class="ch" id="examples">
+<h2><span class="num">⟡</span>Worked examples</h2>
+<p class="lead">Try each example yourself first, then open the solution and compare your steps.</p>
+<div class="prob"><div class="head"><span class="n">Example 3.1</span>
+<span class="t">A basic substitution</span></div>
+<div class="body"><p>Find \(\displaystyle\int x^2\,(x^3 + 2)^5\,dx\).</p> <small class="muted">(Similar to Stewart §4.5, Example 1)</small></div>
+<details class="ans"><summary>Show solution <small>(try it first)</small></summary>
+<div class="a"><p><strong>Strategy:</strong></p><p>The inner function \(x^3 + 2\) has derivative \(3x^2\), and \(x^2\) appears as a factor. So try \(u = x^3 + 2\).</p><p><strong>Solution:</strong></p><p>\(u = x^3 + 2\), \(du = 3x^2\,dx\), so \(x^2\,dx = \tfrac13\,du\). Then
+\[\int x^2 (x^3 + 2)^5\,dx = \frac13\int u^5\,du = \frac13\cdot\frac{u^6}{6} + C = \frac{(x^3 + 2)^6}{18} + C.\]</p><p><strong>Check:</strong></p><p>\(\frac{d}{dx}\frac{(x^3+2)^6}{18} = \frac{6(x^3+2)^5\cdot 3x^2}{18} = x^2(x^3+2)^5\). ✔ Forgetting the \(\tfrac13\) would give an answer three times too big.</p></div></details></div><div class="prob"><div class="head"><span class="n">Example 3.2</span>
+<span class="t">Substitution with a leftover x</span></div>
+<div class="body"><p>Find \(\displaystyle\int x\sqrt{x - 1}\,dx\).</p> <small class="muted">(Similar to Stewart §4.5, Example 5)</small></div>
+<details class="ans"><summary>Show solution <small>(try it first)</small></summary>
+<div class="a"><p><strong>Strategy:</strong></p><p>Let \(u = x - 1\) to simplify the root. The extra factor \(x\) is not the derivative of \(u\), so express it in terms of \(u\): \(x = u + 1\).</p><p><strong>Solution:</strong></p><p>\(u = x - 1\), \(du = dx\), \(x = u + 1\):
+\[\int x\sqrt{x-1}\,dx = \int (u + 1)\,u^{1/2}\,du = \int \left(u^{3/2} + u^{1/2}\right)du = \frac25 u^{5/2} + \frac23 u^{3/2} + C.\]
+So \(\displaystyle\int x\sqrt{x - 1}\,dx = \frac25 (x-1)^{5/2} + \frac23 (x-1)^{3/2} + C\).</p><p><strong>Check:</strong></p><p>Differentiating gives \((x-1)^{3/2} + (x-1)^{1/2} = (x-1)^{1/2}\big[(x - 1) + 1\big] = x\sqrt{x-1}\). ✔</p></div></details></div><div class="prob"><div class="head"><span class="n">Example 3.3</span>
+<span class="t">A definite integral with new limits</span></div>
+<div class="body"><p>Evaluate \(\displaystyle\int_0^{\pi/2} \cos x\,\sqrt{1 + 3\sin x}\,dx\).</p> <small class="muted">(Similar to Stewart §4.5, Example 7)</small></div>
+<details class="ans"><summary>Show solution <small>(try it first)</small></summary>
+<div class="a"><p><strong>Strategy:</strong></p><p>The inner function \(1 + 3\sin x\) has derivative \(3\cos x\), and \(\cos x\) is a factor. Substitute and change the limits.</p><p><strong>Solution:</strong></p><p>\(u = 1 + 3\sin x\), \(du = 3\cos x\,dx\), so \(\cos x\,dx = \tfrac13\,du\). When \(x = 0\), \(u = 1\); when \(x = \pi/2\), \(u = 4\).
+\[\int_0^{\pi/2} \cos x\sqrt{1 + 3\sin x}\,dx = \frac13\int_1^4 u^{1/2}\,du = \frac13\cdot\frac23\Big[u^{3/2}\Big]_1^4 = \frac29(8 - 1) = \frac{14}{9}.\]</p><p><strong>Check:</strong></p><p>The integrand is positive on \((0, \pi/2)\) and lies between 0 and 2, so the answer must lie between 0 and \(2\cdot\pi/2 \approx 3.14\). \(14/9 \approx 1.56\) is reasonable. Note that we did not return to \(x\) after changing the limits.</p></div></details></div>
+</section>

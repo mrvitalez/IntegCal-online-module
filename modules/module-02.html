@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CAL02 · Integral Calculus · Rizal Technological University</title>
+<meta name="description" content="CAL02 online modules. Sign in with your @rtu.edu.ph Google account.">
+<link rel="icon" type="image/png" href="../img/icon-student.png">
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/config.js"></script>
+</head>
+<body class="landing">
+<div class="banner">∫ <b>CAL02 · Integral Calculus</b> &nbsp;—&nbsp; a class of <b>Instr. Ryan M. Vitalez, LPT</b><span>&nbsp;·&nbsp; Rizal Technological University</span></div>
+<header class="hero"><div class="inner">
+<img class="logo" src="../img/rtu-logo.jpg" alt="Rizal Technological University seal">
+<div class="txt">
+<span class="eyebrow">∫ Rizal Technological University · Department of Earth and Space Sciences</span>
+<h1><small>CAL02 · Bachelor of Science in Astronomy</small>Integral Calculus</h1>
+<p id="msg">Opening the course site… The modules are for RTU students only: you will be asked to use your
+<b>@rtu.edu.ph</b> Google account if you are not signed in yet.</p>
+<div class="hchips"><a class="cta" id="go" href="#">🎓 Open the CAL02 modules</a><span>🔒 RTU accounts only</span></div>
+</div></div></header>
+<script>
+(function () {
+  var base = window.CAL02_STUDENT_URL || "";
+  var go = document.getElementById("go");
+  if (!base) {
+    document.getElementById("msg").textContent = "The course site is being set up. Please check back soon.";
+    go.style.display = "none";
+    return;
+  }
+  var url = base + "?module=2";
+  go.href = url;
+  location.replace(url);
+})();
+</script>
+</body>
+</html>
