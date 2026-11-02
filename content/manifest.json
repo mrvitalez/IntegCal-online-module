@@ -138,7 +138,7 @@
    "tab": "M01 Definite Integral",
    "icon": "📐",
    "optional": false,
-   "overview": "How do you measure the area of a region with a curved edge, or the distance travelled when speed keeps changing? You will approximate with rectangles, take a limit, and arrive at the definite integral, the central idea of this course.",
+   "overview": "How do we find the area of a region when one of its sides is curved? Let's start with what we already know, the area of a rectangle, use many thin rectangles to estimate the area, and then take a limit. That limit is the definite integral, the central idea of this course.",
    "topics": [
     "Areas and Distances",
     "The Definite Integral"
@@ -247,7 +247,7 @@
    "tab": "M02 Fundamental Theorem",
    "icon": "🔗",
    "optional": false,
-   "overview": "The Fundamental Theorem of Calculus connects derivatives and integrals, turning the long limit computations of Module 1 into one-line evaluations. You will also build a table of indefinite integrals and use integrals of rates to find net change, displacement and distance.",
+   "overview": "In Module 1 it took a whole page of summation formulas to get ∫₀³ (x³ − 6x) dx = −6.75. The Fundamental Theorem of Calculus does it in two lines, and shows that derivatives and integrals undo each other. We will also build a table of indefinite integrals and use integrals of rates to find net change, displacement and distance.",
    "topics": [
     "The Fundamental Theorem of Calculus",
     "Indefinite Integrals and the Net Change Theorem"
@@ -356,7 +356,7 @@
    "tab": "M03 Substitution Rule",
    "icon": "🔄",
    "optional": false,
-   "overview": "The Substitution Rule reverses the Chain Rule and lets you integrate many functions that are not in the basic table. You will use it for indefinite and definite integrals, learn to change the limits of integration, and use symmetry to evaluate integrals over intervals centred at zero.",
+   "overview": "Now that we can get areas through integration, let's dive into our first strategy for solving integrals that are not in the table: the Substitution Rule. It is the Chain Rule run backwards. We will use it for indefinite and definite integrals, change the limits of integration, and use symmetry to evaluate integrals over intervals centred at zero.",
    "topics": [
     "The Substitution Rule"
    ],
@@ -464,7 +464,7 @@
    "tab": "M04 Areas & Volumes",
    "icon": "🥏",
    "optional": false,
-   "overview": "Use definite integrals to measure the area of a region trapped between two curves, slicing vertically or horizontally. Then slice solids into thin disks and washers to find volumes, including solids made by rotating a region about a line.",
+   "overview": "In the previous modules we used the definite integral to get the area under one curve. Now let's use it to get the area trapped between two curves, slicing vertically or horizontally, and then the volume of a solid, by slicing it into thin disks and washers.",
    "topics": [
     "Areas between the curves",
     "Volumes"
@@ -578,7 +578,7 @@
    "tab": "M05 Shells, Work, Average",
    "icon": "🏗️",
    "optional": false,
-   "overview": "Learn a second way to compute volumes of revolution using cylindrical shells. Then apply integrals to physics, computing the work done by variable forces, springs, cables and pumps, and finish with the average value of a function and the Mean Value Theorem for Integrals.",
+   "overview": "Let's learn a second way to get volumes of revolution: cylindrical shells. Then we use integrals in physics to find the work done by a variable force, by springs, and in lifting cables and pumping water, and we finish with the average value of a function and the Mean Value Theorem for Integrals.",
    "topics": [
     "Volumes by Cylindrical Shells",
     "Work",
@@ -692,7 +692,7 @@
    "tab": "M06 Parts & Trig Integrals",
    "icon": "🧩",
    "optional": false,
-   "overview": "Integration by parts turns the Product Rule into a tool for integrating products such as x e^x, x² ln x and e^x sin x. You will also learn the identity-and-substitute strategies for powers of sine, cosine, tangent and secant.",
+   "overview": "Let's learn integration by parts, the Product Rule in reverse, and use the LIATE acronym to choose u. Then we work out step-by-step strategies for powers of sine, cosine, tangent and secant.",
    "topics": [
     "Integration by parts",
     "Trigonometric Integrals"
@@ -801,7 +801,7 @@
    "tab": "M07 Trig Sub & Part. Fractions",
    "icon": "🔺",
    "optional": false,
-   "overview": "Square roots such as √(9 − x²) disappear when you substitute x = 3 sin θ, and a reference triangle brings you back to x. Rational functions are split into partial fractions, each of which integrates to a logarithm, a power or an inverse tangent.",
+   "overview": "Square roots such as √(4 − x²) disappear when we substitute x = 2 sin θ, and a reference triangle brings us back to x. Then we split rational functions into partial fractions, case by case, so that each piece integrates to a logarithm, a power or an inverse tangent.",
    "topics": [
     "Trigonometric Substitution",
     "Integration of Rational Function by Partial Fractions"
@@ -910,7 +910,7 @@
    "tab": "M08 Strategy & Improper Ints",
    "icon": "♾️",
    "optional": false,
-   "overview": "You will learn a checklist for choosing an integration method when no one tells you which section a problem comes from. Then you will extend the definite integral to infinite intervals and to functions that blow up, and decide whether such improper integrals converge or diverge.",
+   "overview": "We learn a checklist for identifying and classifying an integral and choosing the right technique when no one tells us which section it comes from. Then we extend the definite integral to infinite intervals and to functions that blow up, and decide whether these improper integrals converge or diverge.",
    "topics": [
     "Strategy for Integration",
     "Improper Integrals"
@@ -1009,7 +1009,7 @@
    "tab": "M09 Laplace & Fourier",
    "icon": "🌊",
    "optional": true,
-   "overview": "Optional special topic: two improper integrals that engineers and physicists use every day. The Laplace transform turns differential equations into algebra, and the Fourier transform breaks a signal into its frequencies. Both are built directly on the improper integrals of Stewart §7.8.",
+   "overview": "Optional special topic (not part of the exam): two improper integrals that you will meet again in your DE classes. The Laplace transform turns differential equations into algebra, and the Fourier transform breaks a signal into its frequencies. Both are built directly on the improper integrals of Stewart §7.8.",
    "topics": [
     "Laplace Transform",
     "Fourier Transform"
@@ -1118,7 +1118,7 @@
    "tab": "M10 Arc Length & Probability",
    "icon": "📏",
    "optional": false,
-   "overview": "Measure the length of a curve and the area of a surface of revolution by adding up tiny straight pieces. Then use integrals to compute probabilities, means and medians for continuous random variables, including the exponential and normal distributions.",
+   "overview": "Let's use integration to measure things that are not flat areas: the length of a curve, the area of a surface made by rotating a curve, and probabilities for quantities that can take any value in an interval. Every one of these comes down to setting up the right integral and then using the techniques you already know.",
    "topics": [
     "Arc Length",
     "Area of a Surface of Revolution",
@@ -1237,7 +1237,7 @@
    "tab": "M11 Parametric Curves",
    "icon": "🌀",
    "optional": false,
-   "overview": "Curves that are not graphs of functions can be described by giving x and y as functions of a parameter t. You will learn to sketch and identify parametric curves, then find slopes, concavity, areas, arc lengths and surface areas directly from the parametric equations.",
+   "overview": "Not every curve is the graph of a function y = f(x). In this module we describe curves by writing both x and y in terms of a third variable t, the parameter. We will sketch and identify parametric curves, and then find slopes, tangent lines, concavity, areas, arc lengths and surface areas directly from the parametric equations.",
    "topics": [
     "Curves defined by Parametric Equations",
     "Calculus with Parametric Curves"
@@ -1346,7 +1346,7 @@
    "tab": "M12 Polar and Conics",
    "icon": "🎯",
    "optional": false,
-   "overview": "Polar coordinates describe a point by its distance and direction from a fixed pole, which makes circles, spirals, roses and cardioids easy to write down. You will convert between coordinate systems, find tangents, areas and arc lengths of polar curves, and describe every conic section with a single polar equation.",
+   "overview": "Polar coordinates describe a point by its distance and direction from a fixed point, the pole. With them, circles, spirals, roses and cardioids become easy to write down. In this module we convert between coordinate systems, find tangents, areas and arc lengths of polar curves, and describe every conic section with one polar equation.",
    "topics": [
     "Polar Coordinates",
     "Areas and Lengths in Polar Coordinates",
@@ -1460,7 +1460,7 @@
    "tab": "M13 Sequences & Series",
    "icon": "🔢",
    "optional": false,
-   "overview": "What does it mean to add infinitely many numbers? You will learn to find limits of sequences, sum geometric and telescoping series, and decide convergence with the Test for Divergence, the Integral Test, the Comparison Tests and the Alternating Series Test, including how accurate a partial sum is.",
+   "overview": "What does it mean to add infinitely many numbers? In this module we find limits of sequences, sum geometric and telescoping series, and decide convergence with the Test for Divergence, the Integral Test, the Comparison Tests and the Alternating Series Test, including how accurate a partial sum is.",
    "topics": [
     "Sequences",
     "Series",
@@ -1584,7 +1584,7 @@
    "tab": "M14 Power & Taylor Series",
    "icon": "📈",
    "optional": false,
-   "overview": "You will finish the convergence toolkit with absolute convergence and the Ratio and Root Tests, learn a strategy for choosing a test, and then move to power series: their intervals of convergence, how to build them from known functions, Taylor and Maclaurin series, and how Taylor polynomials approximate functions in mathematics and physics.",
+   "overview": "We finish the convergence toolkit with absolute convergence and the Ratio and Root Tests, and a strategy for choosing a test. Then we move to power series: their intervals of convergence, how to build them from known functions, Taylor and Maclaurin series, and how Taylor polynomials approximate functions in mathematics and physics.",
    "topics": [
     "Absolute Convergence and the Ratio and Root Tests",
     "Strategy for Testing Series",
@@ -1713,7 +1713,7 @@
    "tab": "M15 Vector Calculus",
    "icon": "🧭",
    "optional": true,
-   "overview": "Optional special topic: vectors and their calculus, from Stewart Chapters 12 and 13. You will add and scale vectors, measure angles and areas with the dot and cross products, and differentiate and integrate vector functions that describe curves and motion.",
+   "overview": "Optional special topic: vectors and their calculus, from Stewart Chapters 12 and 13. We will add and scale vectors, measure angles and areas with the dot and cross products, and then differentiate and integrate vector functions that describe curves and motion.",
    "topics": [
     "Vectors",
     "Dot and Cross Products",

@@ -11,7 +11,7 @@ same deployment (`?page=admin`). Setup: [INSTRUCTOR-SETUP.md](INSTRUCTOR-SETUP.m
 Each module has:
 
 1. **Discussion**: one part per textbook section, with key equations, original figures and common mistakes.
-2. **Worked examples**: three solved problems, solutions hidden until opened.
+2. **Worked examples**: 3–6 problems solved step by step (Given, Step 1, Step 2, …, Answer), solutions hidden until opened.
 3. **Lecture video**: one free lecture (cited on the page) that pauses for three multiple-choice questions;
    answers are recorded.
 4. **Activity**: 8 graded items plus a reflection. Answers can be numbers, exact values (`pi/4`) or formulas

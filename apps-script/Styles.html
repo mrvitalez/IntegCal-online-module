@@ -408,6 +408,14 @@ h3.part::before { content: ""; width: 14px; height: 3px; border-radius: 2px; bac
 .readback.ok { padding: 6px 10px; border-radius: 9px; background: var(--plum-pale); border: 1px solid var(--plum-line); }
 .readback.bad { padding: 6px 10px; border-radius: 9px; background: var(--no-bg); border: 1px solid var(--no-bd); color: var(--no); }
 .key-layout .questions .readback, .key-layout .questions .answer-help { display: none; }
+.sol-step { margin: 10px 0; padding: 8px 14px 6px; border-left: 4px solid var(--plum-3); background: var(--card); border-radius: 0 10px 10px 0; }
+.sol-step > p:first-of-type { margin-top: 4px; }
+.sol-step-label { font-weight: 850; font-size: .8rem; letter-spacing: .05em; text-transform: uppercase; color: var(--plum); }
+.sol-step.given { border-left-color: var(--line); background: var(--plum-pale); }
+.sol-step.answer { border-left-color: var(--ok); background: var(--ok-bg); }
+.sol-step.answer .sol-step-label { color: var(--ok); }
+.sol-step.check { border-left-color: var(--amber); background: var(--amber-soft); }
+.sol-step .MathJax { overflow-x: auto; overflow-y: hidden; max-width: 100%; }
 main.problemset ol.ps-list { padding-left: 1.4em; }
 .key-layout table.data input.ans { min-width: 190px; }
 main.problemset ol.ps-list > li { margin: 0 0 14px; padding: 12px 14px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
