@@ -359,7 +359,7 @@ div.field { display: flex; flex-direction: column; font-size: .85rem; font-weigh
   background: var(--ok-bg); color: var(--ok); border: 1px solid var(--ok-bd); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
 .who { background: transparent !important; border: 0 !important; padding: 6px 4px !important; font-weight: 600 !important; opacity: .9; cursor: default; }
 .who b { font-weight: 800; }
-.student-grid > div.field { grid-column: 1 / -1; }
+.student-grid > div.field:first-child { grid-column: 1 / -1; }
 .auto-email { max-width: 560px; }
 
 /* Student home: course information and syllabus sections */
@@ -392,6 +392,11 @@ h3.part { font-size: 1.12rem; font-weight: 800; color: var(--amber-2); margin: 3
 h3.part::before { content: ""; width: 14px; height: 3px; border-radius: 2px; background: var(--amber); flex: none; }
 .req-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 16px !important; color: #E8EFFA !important; }
 .req-chip { font-size: .85rem; font-weight: 800; color: #A7F3D0; background: rgba(16, 185, 129, .12); border: 1px solid rgba(16, 185, 129, .4); border-radius: 999px; padding: 4px 12px; }
+
+/* Watermark with the student's email on module pages (also printed) */
+#wm { position: fixed; inset: 0; z-index: 90; pointer-events: none; background-repeat: repeat;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.privacy { font-size: .8rem; opacity: .85; max-width: 90ch; }
 
 
 /* Calculus additions: optional modules, problem sets, formula answers */

@@ -379,9 +379,29 @@ var MathExpr = (function () {
     return '<span class="who">Signed in as <b>' + esc(BOOT.email) + '</b></span>';
   }
 
+  // ---------- watermark ----------
+  // Module pages carry the student's email and student number faintly across the screen, so screenshots and
+  // printouts show whose account they came from.
+  function watermark(on, d) {
+    var el = document.getElementById("wm");
+    if (!on) { if (el) el.remove(); return; }
+    var text = BOOT.email + (d.enrolled && d.enrolled.studentNo ? " · " + d.enrolled.studentNo : "");
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="420" height="240">' +
+      '<text x="210" y="120" text-anchor="middle" transform="rotate(-24 210 120)" ' +
+      'font-family="Arial, sans-serif" font-size="15" fill="#17573A" fill-opacity="0.11">' + esc(text) + "</text></svg>";
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "wm";
+      el.setAttribute("aria-hidden", "true");
+      document.body.appendChild(el);
+    }
+    el.style.backgroundImage = 'url("data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg) + '")';
+  }
+
   // ---------- home ----------
   function renderHome(d) {
     document.body.className = "landing";
+    watermark(false);
     var man = d.manifest, sem = d.semester;
     var byN = {};
     d.modules.forEach(function (m) { byN[m.n] = m; });
@@ -488,12 +508,16 @@ var MathExpr = (function () {
   function footer(man) {
     return '<footer class="site-foot"><div class="in"><p><b>' + esc(man.course) + " · " + esc(man.courseTitle) +
       "</b>. " + esc(man.university) + ". Online modules by <b>" + esc(man.instructor) + "</b>.</p>" +
+      '<p class="privacy">This site is for enrolled students only. Your access is tied to your RTU account and personal link, ' +
+      "and module pages are marked with your email. Attempts to open the site with another student's link are recorded " +
+      "for your instructor. Please do not share your link or the course materials.</p>" +
       '<p><a target="_top" href="' + esc(link("")) + '">Course home</a></p></div></footer>';
   }
 
   // ---------- module ----------
   function renderModule(d) {
     document.body.className = "";
+    watermark(true, d);
     var m = d.module, man = d.manifest, n = m.n;
     var hero = '<header class="hero" data-num="' + (n < 10 ? "0" : "") + n + '"><div class="inner">' + heroHead(man) +
       '<div class="txt"><div class="crumbs"><a target="_top" href="' + esc(link("")) + '">⌂ Course Home</a>' +
@@ -537,6 +561,7 @@ var MathExpr = (function () {
   // ---------- problem set ----------
   function renderProblemSet(d) {
     document.body.className = "";
+    watermark(true, d);
     var ps = d.ps, man = d.manifest;
     var mods = ps.modules.map(function (n) { return "Module " + n + ": " + man.titles[n - 1]; });
     var hero = '<header class="hero" data-num="PS' + ps.n + '"><div class="inner">' + heroHead(man) +
@@ -731,6 +756,7 @@ var MathExpr = (function () {
   // ---------- activity ----------
   function activitySection(d) {
     var m = d.module, st = d.state, p = d.profile || {};
+    if (!p.blockSection && d.enrolled && d.enrolled.blockSection) p.blockSection = d.enrolled.blockSection;
     var max = d.maxAttempts;
     var used = d.attempts || 0;
     var status = st.canSubmit
@@ -752,7 +778,10 @@ var MathExpr = (function () {
       '<label class="field">Last name<input type="text" data-student="lastName" autocomplete="family-name" value="' + esc(p.lastName || "") + '" required></label>' +
       '<label class="field">First name<input type="text" data-student="firstName" autocomplete="given-name" value="' + esc(p.firstName || "") + '" required></label>' +
       '<label class="field">Middle name<input type="text" data-student="middleName" value="' + esc(p.middleName || "") + '" placeholder="Leave blank if none"></label>' +
-      '<label class="field">Student number<input type="text" data-student="studentNo" value="' + esc(p.studentNo || "") + '" required></label>' +
+      (d.enrolled && d.enrolled.studentNo
+        ? '<div class="field">Student number (from the class list)<div class="auto-email"><span class="lock">🔒</span><span class="addr">' +
+          esc(d.enrolled.studentNo) + '</span><input type="hidden" data-student="studentNo" value="' + esc(d.enrolled.studentNo) + '"></div></div>'
+        : '<label class="field">Student number<input type="text" data-student="studentNo" value="' + esc(p.studentNo || "") + '" required></label>') +
       '<label class="field">Block and section' + sectionField + "</label></div></div>" +
       '<p class="consent">Your RTU email, details, answers, solutions and score are recorded for your instructor. ' +
       "Your work is also saved as a draft on this device until you submit.</p>" +

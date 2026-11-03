@@ -70,8 +70,9 @@ starts with some sample text; delete it before pasting. Click **Save**.
    pages use it. Then check the semester name, set the start and end dates, and check attempts, answer reveal and
    automatic archive. The Syllabus and Consultation links are already filled in.
 2. **Block sections:** type your sections, one per line (they appear as a dropdown in every activity).
-3. **Modules & videos:** choose which modules are visible, optional open and due dates, and check each video.
-4. Open the student site yourself and submit one activity as a test. Then, in **Results**, use **Allow retake** to
+3. **Class list:** import your record book so only enrolled students can open the site (see *Class list* below).
+4. **Modules & videos:** choose which modules are visible, optional open and due dates, and check each video.
+5. Open the student site yourself and submit one activity as a test. Then, in **Results**, use **Allow retake** to
    delete your test attempt.
 
 ## What is new compared with PHYMECH
@@ -113,6 +114,24 @@ starts with some sample text; delete it before pasting. Click **Save**.
   copy of the Sheet in the Drive folder **CAL02 Archives**, then clears submissions, video answers, students and
   the recordbook. Settings, sections, modules, videos and the answer key stay, ready for the next semester.
   You can also archive manually by typing ARCHIVE.
+
+## Class list (who can open the site)
+
+In the admin **Class list** tab, paste the link of your record book, check the tab name (**CAL02**), and click
+**Import class list**. It reads the student numbers (column A) and names. The record book link is kept only in your
+private Sheet, not on GitHub.
+
+- Share **one** link with the whole class: https://mrvitalez.github.io/IntegCal-online-module/
+- RTU emails are the student number + @rtu.edu.ph, so the site recognises each student on the class list by the
+  account they are signed in with. Their student number is filled in from the class list and cannot be changed.
+- Any other account sees "Enrolled students only" and is recorded in the **Access log**.
+- **Personal links** (optional) are for exceptions, such as a student whose RTU email is not their student number.
+  The first account that opens a personal link is tied to it; if another account opens it afterwards, it is blocked
+  and the log names the student whose link was shared. **Unlink** frees a link; **New link** replaces a leaked one.
+- Module and problem set pages show the student's email and student number faintly across the screen, so
+  screenshots and printouts show whose account they came from.
+- You are never blocked. While the class list is empty the site is open to all RTU accounts. Re-import any time
+  (for example after adds and drops). The archive at the end of the semester clears the class list and log.
 
 ## Course information on the student home page
 

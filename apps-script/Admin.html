@@ -30,7 +30,7 @@ window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\
   var view = document.getElementById("view");
   var TABS = [["overview", "📋 Overview"], ["settings", "📅 Semester"], ["sections", "🧑‍🤝‍🧑 Block sections"],
               ["modules", "📚 Modules & videos"], ["key", "🔑 Answer key"], ["results", "📝 Results"],
-              ["record", "📒 Recordbook"], ["archive", "🗄️ Archive"]];
+              ["record", "📒 Recordbook"], ["roster", "🔐 Class list"], ["archive", "🗄️ Archive"]];
 
   document.getElementById("who").textContent = "Signed in as " + (BOOT.email || "");
   document.getElementById("open-sheet").href = BOOT.sheetUrl || "#";
@@ -112,7 +112,7 @@ window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\
   function render() {
     renderTabs();
     ({ overview: overview, settings: settings, sections: sections, modules: modules, key: keyView,
-       results: results, record: record, archive: archive })[tab]();
+       results: results, record: record, roster: roster, archive: archive })[tab]();
   }
 
   // ---------- overview ----------
@@ -445,6 +445,110 @@ window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\
     call("admin_recordbook").then(function (d) { data = d; draw(); }).catch(function (e) { toast(e.message, true); });
   }
 
+  // ---------- class list and personal links ----------
+  function copyText(text) {
+    function fallback() {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); toast("Copied."); } catch (e) { toast("Select the text and press Ctrl+C.", true); }
+      ta.remove();
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { toast("Copied."); }, fallback);
+    } else fallback();
+  }
+  var rosterOnlyBlocked = false;
+  function roster() {
+    view.innerHTML = '<section class="ch"><h2>🔐 Class list and personal links</h2><div id="ro-body"><div class="loading"><div class="spinner"></div>Loading…</div></div></section>';
+    call("admin_roster").then(drawRoster).catch(function (e) { toast(e.message, true); });
+  }
+  function drawRoster(R) {
+    var body = document.getElementById("ro-body");
+    var link = function (code) { return (R.url || "(set the Student site address first)") + "?k=" + code; };
+    var linked = R.rows.filter(function (r) { return r[4]; }).length;
+    var blocked = R.events.filter(function (e) { return /^BLOCKED/.test(e[2]); }).length;
+    var imp = R.imported ? '<div class="notice">✅ Imported ' + R.imported.total + " students" +
+      (R.imported.section ? " (" + esc(R.imported.section) + ")" : "") + ": " + R.imported.added + " new" +
+      (R.imported.removed.length ? "; removed (no longer in the record book): " + esc(R.imported.removed.join(", ")) : "") + ".</div>" : "";
+    var rows = R.rows.map(function (r) {
+      return '<tr data-no="' + esc(r[0]) + '"><td>' + esc(r[0]) + '</td><td class="wrap">' + esc(r[1]) + "</td><td>" + esc(r[2]) +
+        '</td><td><input type="text" readonly class="lnk" value="' + esc(link(r[3])) + '" style="min-width:240px"></td>' +
+        "<td>" + (r[4] ? "✅ " + esc(r[4]) + '<br><span class="muted">since ' + esc(r[5]) + "</span>"
+          : '<span class="muted">Not opened yet<br>expects ' + esc(String(r[0]).toLowerCase()) + "@rtu.edu.ph</span>") +
+        "</td><td>" + esc(r[6]) + '</td><td class="row-actions"><button class="btn small cp">Copy link</button>' +
+        (r[4] ? '<button class="btn ghost small unlink">Unlink</button>' : "") +
+        '<button class="btn danger small newcode">New link</button></td></tr>';
+    }).join("");
+    var ev = R.events.filter(function (e) { return !rosterOnlyBlocked || /^BLOCKED/.test(e[2]); }).map(function (e) {
+      var bad = /^BLOCKED/.test(e[2]);
+      return "<tr" + (bad ? ' style="background:var(--no-bg)"' : "") + "><td>" + esc(e[0]) + "</td><td>" + esc(e[1]) + "</td><td>" +
+        (bad ? "<b>" + esc(e[2]) + "</b>" : esc(e[2])) + "</td><td>" + esc(e[3]) + '</td><td class="wrap">' + esc(e[4]) +
+        '</td><td class="wrap">' + esc(e[5]) + "</td></tr>";
+    }).join("");
+    body.innerHTML =
+      '<p class="lead">Students on the class list are recognised by their RTU email (<b>student number@rtu.edu.ph</b>), so you can share ' +
+      "one link with the whole class. Anyone else is turned away and recorded in the <b>Access log</b>. You (the instructor) are never blocked.</p>" +
+      '<p class="muted">Personal links below are optional: use one for a student whose RTU email is not their student number. ' +
+      "If someone opens a personal link that already belongs to another student, they are blocked and the log names the student whose link was shared.</p>" +
+      '<label class="check"><input type="checkbox" id="req"' + (R.require ? " checked" : "") +
+      "> Only students on the class list can use the site</label>" +
+      '<p class="muted">While the class list is empty, the site stays open to all RTU accounts, so nobody is locked out before you import it.</p>' +
+      "<h3>Import from your record book</h3>" +
+      '<div class="form-grid"><label class="field wide">Record book (Google Sheets link)<input type="text" id="rurl" value="' + esc(R.recordUrl) + '"></label>' +
+      '<label class="field">Tab name<input type="text" id="rsheet" value="' + esc(R.recordSheet) + '"></label></div>' +
+      '<p class="muted">Reads the student numbers in column A and the names next to them. Re-import any time: existing links and accounts are kept; ' +
+      "new students get new links; students no longer in the record book are removed.</p>" +
+      '<div class="btnrow"><button class="btn" id="imp">Import class list</button></div>' + imp +
+      '<div class="grid2" style="margin-top:18px"><div class="stat"><div class="l">Students</div><div class="v">' + R.rows.length + "</div></div>" +
+      '<div class="stat"><div class="l">Linked accounts</div><div class="v">' + linked + "</div></div>" +
+      '<div class="stat"><div class="l">Blocked attempts</div><div class="v">' + blocked + "</div></div></div>" +
+      "<h3>Students and personal links (optional)</h3>" +
+      '<p class="muted">Share the course link with everyone. Personal links are only needed for exceptions; send each one privately. <b>Unlink</b> frees a link (for example if a student used the wrong account). ' +
+      "<b>New link</b> replaces a leaked link; the old one stops working for anyone not yet tied to it.</p>" +
+      '<div class="btnrow"><button class="btn ghost small" id="copyall">Copy all links (name and link per line)</button>' +
+      '<a class="btn ghost small" target="_blank" rel="noopener" href="' + esc(R.sheetUrl) + '" style="text-decoration:none">Open Class List tab</a></div>' +
+      '<div class="tw" style="margin-top:10px"><table class="data"><thead><tr><th>Student no.</th><th>Name</th><th>Section</th><th>Personal link</th>' +
+      "<th>Account</th><th>Last seen</th><th></th></tr></thead><tbody>" + (rows || '<tr><td colspan="7" class="muted">No students yet. Import your class list above.</td></tr>') +
+      "</tbody></table></div>" +
+      '<h3>Access log</h3><label class="check"><input type="checkbox" id="onlyb"' + (rosterOnlyBlocked ? " checked" : "") + "> Show blocked attempts only</label>" +
+      '<div class="tw" style="margin-top:8px"><table class="data"><thead><tr><th>When</th><th>Account</th><th>Event</th><th>Link owner no.</th><th>Link owner</th><th>Details</th></tr></thead><tbody>' +
+      (ev || '<tr><td colspan="6" class="muted">Nothing recorded yet.</td></tr>') + "</tbody></table></div>";
+
+    document.getElementById("req").onchange = function () {
+      var on = this.checked;
+      call("admin_saveSettings", { requireClassList: on ? "TRUE" : "FALSE" }).then(function (d) {
+        A = d;
+        toast(on ? "Only students on the class list can use the site." : "Class list check turned off: any RTU account can use the site.");
+      }).catch(function (e) { toast(e.message, true); });
+    };
+    document.getElementById("onlyb").onchange = function () { rosterOnlyBlocked = this.checked; drawRoster(R); };
+    document.getElementById("imp").onclick = function () {
+      var b = this;
+      busy(b, true, "Importing…");
+      call("admin_importRoster", document.getElementById("rurl").value, document.getElementById("rsheet").value)
+        .then(function (r2) { toast("Class list imported."); drawRoster(r2); })
+        .catch(function (e) { busy(b, false); toast(e.message, true); });
+    };
+    document.getElementById("copyall").onclick = function () {
+      copyText(R.rows.map(function (r) { return r[1] + " (" + r[0] + "): " + link(r[3]); }).join("\n"));
+    };
+    body.querySelectorAll("tr[data-no]").forEach(function (tr) {
+      var no = tr.dataset.no;
+      tr.querySelector(".cp").onclick = function () { copyText(tr.querySelector(".lnk").value); };
+      var u = tr.querySelector(".unlink");
+      if (u) u.onclick = function () {
+        if (!confirm("Unlink this account from student " + no + "? The next RTU account to open their link will be tied to it.")) return;
+        call("admin_unlink", no).then(function (r2) { toast("Unlinked."); drawRoster(r2); }).catch(function (e) { toast(e.message, true); });
+      };
+      tr.querySelector(".newcode").onclick = function () {
+        if (!confirm("Give student " + no + " a new personal link? The old link stops working for anyone who is not already tied to it. Send them the new link.")) return;
+        call("admin_newCode", no).then(function (r2) { toast("New link created."); drawRoster(r2); }).catch(function (e) { toast(e.message, true); });
+      };
+    });
+  }
+
   // ---------- archive ----------
   function archive() {
     var s = A.settings;
@@ -461,7 +565,7 @@ window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\
       }).join("") + "</tbody></table></div>" : '<p class="muted">No archives yet.</p>';
     view.innerHTML = '<section class="ch"><h2>🗄️ Archive and reset</h2>' +
       '<p class="lead">Archiving saves a full copy of the Google Sheet in the Drive folder <b>CAL02 Archives</b>, then clears the student records ' +
-      "(submissions, video answers, students and recordbook) so the site is ready for the next semester. " +
+      "(submissions, video answers, students, recordbook, class list links and access log) so the site is ready for the next semester. " +
       "Your settings, block sections, modules, videos and answer key are kept.</p>" +
       '<div class="notice">' + auto + (A.autoArchiveTrigger ? "" : (truthy(s.autoArchive) ? " <b>The daily check is not installed yet: save the Semester settings once to install it.</b>" : "")) + "</div>" +
       "<h3>Archive now</h3><p>Type <b>ARCHIVE</b> and press the button to archive and clear the records right away.</p>" +

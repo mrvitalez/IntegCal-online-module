@@ -24,8 +24,11 @@ var CONFIG = {
 
 var TABS = {
   SETTINGS: 'Settings', SECTIONS: 'Block Sections', MODULES: 'Modules', KEY: 'Answer Key',
-  STUDENTS: 'Students', VIDEO: 'Video Responses', RECORD: 'Recordbook', LOG: 'Archive Log'
+  STUDENTS: 'Students', VIDEO: 'Video Responses', RECORD: 'Recordbook', LOG: 'Archive Log',
+  ROSTER: 'Class List', ACCESS: 'Access Log'
 };
+var ROSTER_HEAD = ['Student No.', 'Name', 'Block and Section', 'Link Code', 'Linked Email', 'Linked On', 'Last Seen'];
+var ACCESS_HEAD = ['Timestamp', 'Email', 'Event', 'Link Owner (Student No.)', 'Link Owner (Name)', 'Details'];
 
 var SUB_HEAD = ['Submission ID', 'Timestamp', 'Email', 'Student No.', 'Last Name', 'First Name', 'Middle Name',
                 'Block and Section', 'Attempt', 'Score', 'Total', 'Percent', 'Final Score', 'Instructor Remarks'];
@@ -50,6 +53,9 @@ var DEFAULT_SETTINGS = [
   ['autoArchive', 'TRUE', 'Archive and clear the records automatically after the semester ends'],
   ['archiveDelayDays', '7', 'Days after the end date before the automatic archive runs'],
   ['announcement', '', 'Optional message shown at the top of the student home page'],
+  ['requireClassList', 'TRUE', 'Only students on the Class List (opening their personal link) can use the site'],
+  ['classRecordUrl', '', 'Record book imported into the Class List (pasted in the admin Class list tab)'],
+  ['classRecordSheet', 'CAL02', 'Tab of the record book with the student numbers and names'],
   ['contentVersion', '1', 'Raised by "Refresh lesson content" in the admin site'],
   ['lastArchivedEnd', '', 'Set automatically: end date of the semester last archived']
 ];
@@ -71,6 +77,8 @@ function doGet(e) {
     if (!isAdmin_(email)) return message_('Instructors only', 'This page is only for the course instructor.');
     return app_('Admin', 'CAL02 Admin', { email: email, url: appUrl_(), sheetUrl: ss_().getUrl() });
   }
+  var gate = gate_(email, p.k, true);
+  if (!gate.ok) return message_(gate.title, gate.message);
   var boot = { email: email, url: appUrl_(), module: Number(p.module) || 0, ps: Number(p.ps) || 0 };
   try {
     boot.data = boot.module ? api_module(boot.module) : boot.ps ? api_problemset(boot.ps) : api_home();
@@ -106,7 +114,7 @@ function message_(title, body) {
 // ---------------------------------------------------------------------------
 
 function api_home() {
-  var email = requireRtu_();
+  var email = requireStudent_();
   var s = settings_();
   var today = today_();
   var man = manifest_();
@@ -118,7 +126,7 @@ function api_home() {
     return { n: m.n, title: m.title, icon: m.icon, overview: m.overview, topics: m.topics, state: st, optional: !!m.optional,
              attempts: pr.attempts, best: pr.best, total: pr.total, video: !!(rows[m.n] && rows[m.n].videoId) };
   });
-  return { view: 'home', email: email, url: appUrl_(), manifest: { parts: man.parts, course: man.course, courseTitle: man.courseTitle,
+  return { view: 'home', email: email, url: appUrl_(), enrolled: enrolledFor_(email), manifest: { parts: man.parts, course: man.course, courseTitle: man.courseTitle,
            problemSets: man.problemSets || [],
            instructor: man.instructor, university: man.university, department: man.department,
            program: man.program, logo: man.logo },
@@ -133,7 +141,7 @@ function syllabus_() {
 }
 
 function api_module(n) {
-  var email = requireRtu_();
+  var email = requireStudent_();
   n = Number(n);
   var s = settings_();
   var today = today_();
@@ -141,7 +149,7 @@ function api_module(n) {
   var m = findModule_(man, n);
   var row = moduleRows_()[n];
   var st = moduleState_(row, s, today);
-  var out = { view: 'module', email: email, url: appUrl_(), module: { n: n, title: m.title, icon: m.icon, overview: m.overview,
+  var out = { view: 'module', email: email, url: appUrl_(), enrolled: enrolledFor_(email), module: { n: n, title: m.title, icon: m.icon, overview: m.overview,
               activityTitle: m.activityTitle, sections: m.sections, optional: !!m.optional, items: m.items,
               problemSet: problemSetFor_(man, n) },
               manifest: { logo: man.logo, course: man.course, courseTitle: man.courseTitle,
@@ -163,7 +171,7 @@ function api_module(n) {
 
 /** A problem set page (for the notebook; graded by the instructor, not online). */
 function api_problemset(k) {
-  var email = requireRtu_();
+  var email = requireStudent_();
   k = Number(k);
   var man = manifest_();
   var ps = (man.problemSets || []).filter(function (x) { return x.n === k; })[0];
@@ -173,7 +181,7 @@ function api_problemset(k) {
   var rows = moduleRows_();
   // A problem set opens together with the first of its modules that students can view.
   var open = ps.modules.some(function (n) { return moduleState_(rows[n], s, today).canView; });
-  return { view: 'problemset', email: email, url: appUrl_(), ps: ps, open: open,
+  return { view: 'problemset', email: email, url: appUrl_(), enrolled: enrolledFor_(email), ps: ps, open: open,
            html: open ? content_('problemset-' + pad_(k) + '.html') : '',
            manifest: { logo: man.logo, course: man.course, courseTitle: man.courseTitle, instructor: man.instructor,
                        university: man.university, titles: man.modules.map(function (x) { return x.title; }) } };
@@ -185,7 +193,7 @@ function problemSetFor_(man, n) {
 }
 
 function api_submit(n, payload) {
-  var email = requireRtu_();
+  var email = requireStudent_();
   n = Number(n);
   var lock = LockService.getScriptLock();
   lock.waitLock(25000);
@@ -197,6 +205,8 @@ function api_submit(n, payload) {
     var m = findModule_(man, n);
     var p = payload || {};
     var who = cleanProfile_(p.student || {});
+    var enrolled = enrolledFor_(email);
+    if (enrolled) who.studentNo = enrolled.studentNo;
     var sections = sectionsList_();
     if (sections.length && sections.indexOf(who.blockSection) < 0) throw new Error('Please choose your block and section from the list.');
     if (!who.lastName || !who.firstName || !who.studentNo || !who.blockSection) throw new Error('Please complete your details.');
@@ -256,7 +266,7 @@ function api_submit(n, payload) {
 }
 
 function api_checkpoint(n, index, choice) {
-  var email = requireRtu_();
+  var email = requireStudent_();
   n = Number(n);
   index = Number(index);
   choice = Number(choice);
@@ -307,7 +317,8 @@ function admin_load() {
 
 function admin_saveSettings(obj) {
   requireAdmin_();
-  var allowed = ['studentUrl', 'syllabusUrl', 'consultationUrl', 'semesterName', 'startDate', 'endDate', 'maxAttempts', 'revealAnswers', 'autoArchive',
+  var allowed = ['studentUrl', 'syllabusUrl', 'consultationUrl', 'requireClassList', 'classRecordUrl', 'classRecordSheet',
+                 'semesterName', 'startDate', 'endDate', 'maxAttempts', 'revealAnswers', 'autoArchive',
                  'archiveDelayDays', 'announcement'];
   var clean = {};
   allowed.forEach(function (k) { if (obj && obj[k] !== undefined) clean[k] = String(obj[k]).trim(); });
@@ -475,6 +486,197 @@ function admin_studentPreview() {
 }
 
 // ---------------------------------------------------------------------------
+// Class list and personal links
+//
+// Every student on the Class List has a personal link (<web app URL>?k=<code>). The first RTU account
+// that opens a code is tied to that student; after that the student can use the plain address too.
+// Anyone else is turned away and recorded in the Access Log. When a code that is already tied to one
+// account is opened by another, the log names the student whose link was passed on.
+// ---------------------------------------------------------------------------
+
+function gate_(email, code, logIt) {
+  if (isAdmin_(email)) return { ok: true };
+  var s = settings_();
+  var sh = ss_().getSheetByName(TABS.ROSTER);
+  if (!truthy_(s.requireClassList) || !sh || sh.getLastRow() < 2) return { ok: true };
+  var rows = sh.getRange(2, 1, sh.getLastRow() - 1, ROSTER_HEAD.length).getValues();
+  code = String(code || '').trim().toUpperCase();
+  var mine = -1, byCode = -1;
+  var byNumber = -1;
+  for (var i = 0; i < rows.length; i++) {
+    if (String(rows[i][4]).toLowerCase() === email) mine = i;
+    if (code && String(rows[i][3]).toUpperCase() === code) byCode = i;
+    if (numberEmail_(rows[i][0]) === email) byNumber = i;
+  }
+  // RTU emails are <student number>@rtu.edu.ph, so a student on the class list is recognised by email alone.
+  if (mine < 0 && byNumber >= 0) {
+    mine = byNumber;
+    if (logIt) {
+      var prev = String(rows[mine][4] || '');
+      sh.getRange(mine + 2, 5, 1, 2).setValues([[email, new Date()]]);
+      access_(email, 'Recognised', rows[mine], prev ? 'Student-number email; replaces ' + prev : 'Student-number email on the class list');
+      rows[mine][4] = email;
+    }
+  }
+  var blocked = {
+    ok: false, title: 'Enrolled students only',
+    message: 'This site is only for students enrolled in this class. Sign in with <b>your own</b> RTU account ' +
+      '(your student number @' + CONFIG.DOMAIN + ') and open the link again.' +
+      '<br><br>If you are enrolled and still see this, contact your instructor, ' + esc_(manifestInstructor_()) + '.' +
+      '<br><br>You are signed in as <b>' + esc_(email) + '</b>.'
+  };
+  if (mine >= 0) {
+    if (logIt) {
+      sh.getRange(mine + 2, 7).setValue(new Date());
+      if (byCode >= 0 && byCode !== mine) {
+        access_(email, "Opened another student's link", rows[byCode], 'Enrolled as ' + rows[mine][0] + '; allowed in as themselves');
+      }
+    }
+    return { ok: true, row: rows[mine] };
+  }
+  if (byCode >= 0 && !rows[byCode][4]) {
+    if (!logIt) return blocked;
+    var lock = LockService.getScriptLock();
+    lock.waitLock(20000);
+    try {
+      var fresh = sh.getRange(byCode + 2, 5).getValue();
+      if (!fresh) {
+        sh.getRange(byCode + 2, 5, 1, 3).setValues([[email, new Date(), new Date()]]);
+        access_(email, 'Linked', rows[byCode], 'First use of this personal link');
+        return { ok: true, row: rows[byCode] };
+      }
+    } finally {
+      lock.releaseLock();
+    }
+    rows[byCode][4] = sh.getRange(byCode + 2, 5).getValue();
+  }
+  if (logIt) {
+    if (byCode >= 0) {
+      access_(email, 'BLOCKED: shared link', rows[byCode], 'Link already belongs to ' + rows[byCode][4]);
+    } else {
+      access_(email, 'BLOCKED: not on class list', null, code ? 'Unknown link code ' + code : 'Opened without a personal link');
+    }
+  }
+  return blocked;
+}
+
+function enrolledFor_(email) {
+  var sh = ss_().getSheetByName(TABS.ROSTER);
+  if (!sh || sh.getLastRow() < 2) return null;
+  var rows = sh.getRange(2, 1, sh.getLastRow() - 1, 5).getDisplayValues();
+  for (var i = 0; i < rows.length; i++) {
+    if (rows[i][4].toLowerCase() === email || numberEmail_(rows[i][0]) === email) {
+      return { studentNo: rows[i][0], name: rows[i][1], blockSection: rows[i][2] };
+    }
+  }
+  return null;
+}
+
+/** The RTU email of a student number, e.g. 2026-101878 -> 2026-101878@rtu.edu.ph. */
+function numberEmail_(studentNo) {
+  var no = String(studentNo || '').trim().toLowerCase();
+  return no ? no + '@' + CONFIG.DOMAIN : '';
+}
+
+function access_(email, event, row, details) {
+  sheetFor_(TABS.ACCESS, ACCESS_HEAD).appendRow([new Date(), email, event, row ? "'" + row[0] : '', row ? row[1] : '', details || '']);
+}
+
+function manifestInstructor_() {
+  try { return manifest_().instructor; } catch (e) { return 'your instructor'; }
+}
+
+function newCode_(taken) {
+  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  for (;;) {
+    var c = '';
+    for (var i = 0; i < 8; i++) c += chars.charAt(Math.floor(Math.random() * chars.length));
+    if (!taken[c]) { taken[c] = 1; return c; }
+  }
+}
+
+function admin_roster() {
+  requireAdmin_();
+  var sh = sheetFor_(TABS.ROSTER, ROSTER_HEAD);
+  var rows = sh.getLastRow() > 1 ? sh.getRange(2, 1, sh.getLastRow() - 1, ROSTER_HEAD.length).getDisplayValues() : [];
+  var log = ss_().getSheetByName(TABS.ACCESS);
+  var events = log && log.getLastRow() > 1
+    ? log.getRange(2, 1, log.getLastRow() - 1, ACCESS_HEAD.length).getDisplayValues().reverse().slice(0, 300) : [];
+  var s = settings_();
+  return { url: appUrl_(), rows: rows, events: events, require: truthy_(s.requireClassList),
+           recordUrl: s.classRecordUrl, recordSheet: s.classRecordSheet, sheetUrl: ss_().getUrl() + '#gid=' + sh.getSheetId() };
+}
+
+/** Reads student numbers and names from the record book tab and merges them into the Class List. */
+function admin_importRoster(url, sheetName) {
+  requireAdmin_();
+  var m = String(url || '').match(/\/d\/([\w-]{20,})/);
+  if (!m) throw new Error('Paste the address of your record book (a Google Sheets link).');
+  var book;
+  try { book = SpreadsheetApp.openById(m[1]); } catch (e) { throw new Error('Could not open that spreadsheet. Check the link and that your account can open it.'); }
+  var tab = book.getSheetByName(String(sheetName || '').trim());
+  if (!tab) throw new Error('There is no tab named "' + sheetName + '" in that spreadsheet.');
+  var data = tab.getDataRange().getDisplayValues();
+  var section = '';
+  var found = [];
+  var seen = {};
+  data.forEach(function (r) {
+    var at = r.indexOf('YEAR AND SECTION:');
+    if (at >= 0 && !section) {
+      for (var j = at + 1; j < r.length; j++) if (r[j].trim()) { section = r[j].trim(); break; }
+    }
+    var no = String(r[0] || '').trim();
+    if (!/^\d{4}-\d{4,8}$/.test(no) || seen[no]) return;
+    var name = '';
+    for (var k = 1; k < r.length; k++) if (r[k].trim()) { name = r[k].replace(/\s+,/g, ',').replace(/\s+/g, ' ').trim(); break; }
+    seen[no] = 1;
+    found.push([no, name]);
+  });
+  if (!found.length) throw new Error('No student numbers (like 2026-101878) were found in column A of "' + sheetName + '".');
+
+  var sh = sheetFor_(TABS.ROSTER, ROSTER_HEAD);
+  var old = sh.getLastRow() > 1 ? sh.getRange(2, 1, sh.getLastRow() - 1, ROSTER_HEAD.length).getValues() : [];
+  var byNo = {}, taken = {};
+  old.forEach(function (r) { byNo[String(r[0])] = r; taken[String(r[3])] = 1; });
+  var added = 0;
+  var out = found.map(function (f) {
+    var prev = byNo[f[0]];
+    if (prev) return [f[0], f[1], section || prev[2], prev[3], prev[4], prev[5], prev[6]];
+    added++;
+    return [f[0], f[1], section, newCode_(taken), '', '', ''];
+  });
+  var removed = old.filter(function (r) { return !seen[String(r[0])]; }).map(function (r) { return r[0] + ' ' + r[1]; });
+  if (sh.getLastRow() > 1) sh.deleteRows(2, sh.getLastRow() - 1);
+  sh.getRange(2, 1, Math.max(out.length, 1), 1).setNumberFormat('@');
+  sh.getRange(2, 1, out.length, ROSTER_HEAD.length).setValues(out);
+  if (section && sectionsList_().indexOf(section) < 0) admin_saveSections(sectionsList_().concat([section]));
+  writeSettings_({ classRecordUrl: url, classRecordSheet: sheetName });
+  var res = admin_roster();
+  res.imported = { total: out.length, added: added, removed: removed, section: section };
+  return res;
+}
+
+function admin_unlink(studentNo) {
+  requireAdmin_();
+  var sh = sheetFor_(TABS.ROSTER, ROSTER_HEAD);
+  var r = findRow_(sh, 1, studentNo);
+  if (!r) throw new Error('Student not found on the class list.');
+  sh.getRange(r, 5, 1, 3).setValues([['', '', '']]);
+  return admin_roster();
+}
+
+function admin_newCode(studentNo) {
+  requireAdmin_();
+  var sh = sheetFor_(TABS.ROSTER, ROSTER_HEAD);
+  var r = findRow_(sh, 1, studentNo);
+  if (!r) throw new Error('Student not found on the class list.');
+  var taken = {};
+  sh.getRange(2, 4, sh.getLastRow() - 1, 1).getValues().forEach(function (x) { taken[String(x[0])] = 1; });
+  sh.getRange(r, 4).setValue(newCode_(taken));
+  return admin_roster();
+}
+
+// ---------------------------------------------------------------------------
 // Setup and scheduled maintenance
 // ---------------------------------------------------------------------------
 
@@ -564,7 +766,7 @@ function archive_(reason) {
     var name = 'CAL02 Results - ' + (s.semesterName || 'semester') + ' (archived ' + today_() + ')';
     var copy = DriveApp.getFileById(ss.getId()).makeCopy(name, folder);
     var man = manifest_();
-    var clear = [TABS.STUDENTS, TABS.VIDEO, TABS.RECORD].concat(man.modules.map(function (m) { return m.tab; }));
+    var clear = [TABS.STUDENTS, TABS.VIDEO, TABS.RECORD, TABS.ROSTER, TABS.ACCESS].concat(man.modules.map(function (m) { return m.tab; }));
     clear.forEach(function (t) {
       var sh = ss.getSheetByName(t);
       if (sh && sh.getLastRow() > 1) sh.deleteRows(2, sh.getLastRow() - 1);
@@ -901,6 +1103,13 @@ function isRtu_(email) {
 
 function isAdmin_(email) {
   return CONFIG.ADMIN_EMAILS.map(function (x) { return x.toLowerCase(); }).indexOf(String(email).toLowerCase()) >= 0;
+}
+
+function requireStudent_() {
+  var email = requireRtu_();
+  var gate = gate_(email, '', false);
+  if (!gate.ok) throw new Error(gate.message.replace(/<[^>]+>/g, ''));
+  return email;
 }
 
 function requireRtu_() {
