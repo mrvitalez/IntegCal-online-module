@@ -420,7 +420,7 @@ var MathExpr = (function () {
           : m.state.canSubmit ? '<span class="badge open">Open</span>'
           : '<span class="badge closed">' + (m.state.canView ? "View only" : "Locked") + "</span>";
         var topics = m.topics.map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("");
-        var due = m.state.dueOn ? '<p style="font-size:.82rem;color:#FCE7A7;flex:0">Activity due ' + nice(m.state.dueOn) + "</p>" : "";
+        var due = m.state.dueOn ? '<p style="font-size:.82rem;color:#A7F3D0;flex:0">Activity due ' + nice(m.state.dueOn) + "</p>" : "";
         var links = m.state.canView
           ? '<a class="cl amber" target="_top" href="' + esc(link("module=" + n)) + '">📖 Lesson & video</a>' +
             '<a class="cl ghost" target="_top" href="' + esc(link("module=" + n)) + '#activity">✍️ Activity</a>'
