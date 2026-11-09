@@ -54,7 +54,7 @@ no text or figures are copied from the book. Videos: MIT OpenCourseWare (CC BY-N
 ```
 index.html, modules/      Entry pages that send visitors to the RTU-only student site
 assets/config.js          The student site URL (set once by the instructor)
-assets/style.css          Shared styles (Midnight Navy with Emerald theme)
+assets/style.css          Shared styles (Banana (Olive, Yellow, Butter and Chestnut) theme)
 content/                  Lessons, activities, problem sets, manifest and syllabus (no answers)
 img/                      Figures and the university seal
 apps-script/              Code for the Apps Script project: Code.gs, Student.html, Admin.html, Styles.html
