@@ -1106,7 +1106,24 @@ var MathExpr = (function () {
     // The server also sends the email and site address with every view, in case the page started without them.
     if (D.email) BOOT.email = D.email;
     if (D.url) BOOT.url = D.url;
+    applyDesign(D.design);
     if (D.view === "module") renderModule(D); else if (D.view === "problemset") renderProblemSet(D); else renderHome(D);
+    // Every header gets a texture layer; the page design decides what it shows.
+    document.querySelectorAll("header.hero").forEach(function (h) {
+      if (!h.querySelector(".tex-layer")) { var t = document.createElement("div"); t.className = "tex-layer"; h.insertBefore(t, h.firstChild); }
+    });
+  }
+
+  // Each page (home, module, problem set) can have its own design: a stylesheet from content/designs/
+  // that recolours the page, loads its fonts and draws the header texture. It replaces the previous one.
+  function applyDesign(design) {
+    var el = document.getElementById("page-design");
+    if (!design || !design.css) { if (el) el.parentNode.removeChild(el); document.body.removeAttribute("data-design"); return; }
+    if (el && el.getAttribute("data-key") === design.key) return;
+    if (!el) { el = document.createElement("style"); el.id = "page-design"; document.body.appendChild(el); }
+    el.setAttribute("data-key", design.key);
+    el.textContent = design.css;
+    document.body.setAttribute("data-design", design.key);
   }
   start();
 })();

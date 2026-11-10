@@ -132,7 +132,7 @@ function api_home() {
            program: man.program, logo: man.logo },
            semester: semesterInfo_(s, today), modules: mods, profile: profile_(email),
            maxAttempts: Number(s.maxAttempts) || 0, syllabus: syllabus_(),
-           links: { syllabus: s.syllabusUrl || '', consultation: s.consultationUrl || '' } };
+           links: { syllabus: s.syllabusUrl || '', consultation: s.consultationUrl || '' }, design: designFor_(man, 'home') };
 }
 
 /** Course information, grading, references and consultation hours from content/syllabus.json. */
@@ -149,7 +149,8 @@ function api_module(n) {
   var m = findModule_(man, n);
   var row = moduleRows_()[n];
   var st = moduleState_(row, s, today);
-  var out = { view: 'module', email: email, url: appUrl_(), enrolled: enrolledFor_(email), module: { n: n, title: m.title, icon: m.icon, overview: m.overview,
+  var out = { view: 'module', email: email, url: appUrl_(), enrolled: enrolledFor_(email), design: designFor_(man, 'modules', n),
+              module: { n: n, title: m.title, icon: m.icon, overview: m.overview,
               activityTitle: m.activityTitle, sections: m.sections, optional: !!m.optional, items: m.items,
               problemSet: problemSetFor_(man, n) },
               manifest: { logo: man.logo, course: man.course, courseTitle: man.courseTitle,
@@ -182,9 +183,22 @@ function api_problemset(k) {
   // A problem set opens together with the first of its modules that students can view.
   var open = ps.modules.some(function (n) { return moduleState_(rows[n], s, today).canView; });
   return { view: 'problemset', email: email, url: appUrl_(), enrolled: enrolledFor_(email), ps: ps, open: open,
+           design: designFor_(man, 'problemSets', k),
            html: open ? content_('problemset-' + pad_(k) + '.html') : '',
            manifest: { logo: man.logo, course: man.course, courseTitle: man.courseTitle, instructor: man.instructor,
                        university: man.university, titles: man.modules.map(function (x) { return x.title; }) } };
+}
+
+/**
+ * The page design (colours, fonts and header texture) of the home page, a module or a problem set:
+ * manifest.designs names a stylesheet in content/designs/. Returns { key, css } or null.
+ */
+function designFor_(man, kind, n) {
+  var d = man.designs;
+  if (!d) return null;
+  var key = kind === 'home' ? d.home : (d[kind] || {})[String(n)];
+  if (!key || !/^[a-z0-9-]+$/.test(key)) return null;
+  try { return { key: key, css: content_('designs/' + key + '.css') }; } catch (e) { return null; }
 }
 
 function problemSetFor_(man, n) {

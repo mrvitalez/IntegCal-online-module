@@ -435,4 +435,8 @@ main.problemset ol.ps-list > li::marker { font-weight: 850; color: var(--plum-2)
   main.problemset ol.ps-list > li { break-inside: avoid; border: 0; padding: 4px 0; }
   body { background: #fff; }
 }
+
+/* Page designs: texture layer in the header (drawn by the page's design stylesheet) */
+header.hero .tex-layer { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: 0; }
+header.hero > .inner { position: relative; z-index: 1; }
 </style>

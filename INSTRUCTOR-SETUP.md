@@ -90,6 +90,16 @@ starts with some sample text; delete it before pasting. Click **Save**.
 - **Optional modules.** Modules marked *Optional* (enrichment topics) have activities that are recorded but left out
   of the "Activities Done" count and the average in the recordbook.
 
+## Page designs
+
+The home page and every module have their own design (colours, fonts and a textured header), chosen from 22
+reference designs. Problem set pages use the design of their part's first module. Each design is a stylesheet in
+[`content/designs/`](content/designs/), its header texture is in `img/tex/`, and `content/manifest.json` (key
+`designs`) says which page uses which. The lesson text, the activity form, and the green/red marking look the
+same on every page. To change a page's design, ask Claude with the private build kit, or edit the `designs`
+entry in `manifest.json` (any design whose stylesheet is in `content/designs/`) and click **Refresh lesson
+content from GitHub**.
+
 ## Using the admin site
 
 - **Overview:** semester status, number of students and submissions, which activities are open.

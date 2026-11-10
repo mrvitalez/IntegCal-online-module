@@ -1820,5 +1820,33 @@
    ],
    "activityTitle": "Activity 15: Arrows in Motion"
   }
- ]
+ ],
+ "designs": {
+  "home": "impressionist",
+  "modules": {
+   "1": "mosaic",
+   "2": "halftone",
+   "3": "paper",
+   "4": "landscape",
+   "5": "graphite",
+   "6": "fluted",
+   "7": "dotgrid",
+   "8": "clouds",
+   "9": "ripples",
+   "10": "stipple",
+   "11": "iridescent",
+   "12": "thermal",
+   "13": "ascii",
+   "14": "grain",
+   "15": "blueprint"
+  },
+  "problemSets": {
+   "1": "mosaic",
+   "2": "landscape",
+   "3": "fluted",
+   "4": "stipple",
+   "5": "iridescent",
+   "6": "ascii"
+  }
+ }
 }
